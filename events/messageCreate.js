@@ -61,7 +61,18 @@ module.exports = {
             const mireiButton = new ButtonBuilder().setCustomId('buy_mirei').setLabel('💜 โดเนทให้ มิเรย์ (20 บาท)').setStyle(ButtonStyle.Secondary); 
             const mireiRow = new ActionRowBuilder().addComponents(mireiButton);
             await message.channel.send({ embeds: [mireiEmbed], components: [mireiRow] });
-          
+
+            // --- ก้อนที่ 4: ลลิน (15 บาท) ---
+            const lalinEmbed = new EmbedBuilder()
+                .setColor('#88bcff') 
+                .setTitle('🩵 ตัวละคร: ลลิน (Lalin)')
+                .setDescription('ได้รับยศพิเศษ <@&1492199679977586752>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1492200155812859955/TA-2026-04-08-15-37-29-1girlslim-2809290180-1.png?ex=69da7730&is=69d925b0&hm=a697217f8438fcc3be60e938536f5366707faa36dcbbe2643dc6d45e694f2230&');
+
+            const lalinButton = new ButtonBuilder().setCustomId('buy_lalin').setLabel('🩵 โดเนทให้ ลลิน (15 บาท)').setStyle(ButtonStyle.Secondary);
+            const lalinRow = new ActionRowBuilder().addComponents(lalinButton);
+            await message.channel.send({ embeds: [lalinEmbed], components: [lalinRow] });
+
             await message.delete();
         }
     },

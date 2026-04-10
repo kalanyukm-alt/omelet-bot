@@ -18,7 +18,10 @@ module.exports = {
             } else if (interaction.customId === 'buy_mirei') { 
                 modalId = 'modal_mirei';
                 modalTitle = 'โดเนทให้ มิเรย์ (20 บาท)';
-            } else {
+            } else if (interaction.customId === 'buy_lalin') { 
+                modalId = 'modal_lalin';
+                modalTitle = 'โดเนทให้ ลลิน (15 บาท)';
+            }else {
                 return;
             }
 
@@ -70,6 +73,11 @@ module.exports = {
                 roleIdToGive = '1490129026990473386'; 
                 roleName = 'มิเรย์';
                 expectedAmount = 20; 
+            }
+            else if (interaction.customId === 'modal_lalin') { 
+                roleIdToGive = '1492199679977586752'; 
+                roleName = 'ลลิน';
+                expectedAmount = 15; 
             }
 
             let browser;
