@@ -34,7 +34,7 @@ module.exports = {
                 .setColor('#356bff')
                 .setTitle('🎀 ตัวละคร: ยูริ (Yuri)')
                 .setDescription('ได้รับยศพิเศษ <@&1489704389198217367>')
-                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1492088451045265528/TA-2026-03-31-08-33-28-1girlbeau-2853828639-1.png?ex=69da0f28&is=69d8bda8&hm=68285cc3693cca4978eec2e1e7c5686c2eda5d10122b28c6ef25f033050e0579&=&format=webp&quality=lossless&width=960&height=960');
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1492088451045265528/TA-2026-03-31-08-33-28-1girlbeau-2853828639-1.png?ex=69da0f28&is=69d8bda8&hm=68285cc3693cca4978eec2e1e7c5686c2eda5d10122b28c6ef25f033050e0579&');
 
             const yuriButton = new ButtonBuilder().setCustomId('buy_yuri').setLabel('🎀 โดเนทให้ ยูริ (12 บาท)').setStyle(ButtonStyle.Primary);
             const yuriRow = new ActionRowBuilder().addComponents(yuriButton);
