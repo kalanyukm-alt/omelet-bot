@@ -34,7 +34,7 @@ module.exports = {
                 .setColor('#356bff')
                 .setTitle('🎀 ตัวละคร: ยูริ (Yuri)')
                 .setDescription('ได้รับยศพิเศษ <@&1489704389198217367>')
-                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1489881946338234378/TA-2026-03-31-08-30-23-1girlbeau-2585471507.png?ex=69d9f130&is=69d89fb0&hm=7b68eb589b750e6fce3b235a269d39fcbc40688a49d434c48e315579c799754c&=&format=webp&quality=lossless&width=960&height=960');
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1492088451045265528/TA-2026-03-31-08-33-28-1girlbeau-2853828639-1.png?ex=69da0f28&is=69d8bda8&hm=68285cc3693cca4978eec2e1e7c5686c2eda5d10122b28c6ef25f033050e0579&=&format=webp&quality=lossless&width=960&height=960');
 
             const yuriButton = new ButtonBuilder().setCustomId('buy_yuri').setLabel('🎀 โดเนทให้ ยูริ (12 บาท)').setStyle(ButtonStyle.Primary);
             const yuriRow = new ActionRowBuilder().addComponents(yuriButton);
@@ -45,7 +45,7 @@ module.exports = {
                 .setColor('#ffbaba')
                 .setTitle('🌸 ตัวละคร: เซนะ (Sena)')
                 .setDescription('ได้รับยศพิเศษ <@&1489705449094643872>')
-                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1489881991762677770/TA-2026-04-01-16-33-12-1girlbeau-3059653170.png?ex=69d9f13b&is=69d89fbb&hm=ddd2b8e0851605cdd1cae64941c91c3585ba2c296f635dab832dc930e915bf38&=&format=webp&quality=lossless&width=960&height=960');
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1492088519496171641/TA-2026-04-01-16-33-12-1girlbeau-3059653170.png?ex=69da0f38&is=69d8bdb8&hm=57cac0b102d018d498066757eac03e30a36116d121ea63459c5f8e1fbac97e19&=&format=webp&quality=lossless&width=960&height=960');
 
             const senaButton = new ButtonBuilder().setCustomId('buy_sena').setLabel('🌸 โดเนทให้ เซนะ (10 บาท)').setStyle(ButtonStyle.Success);
             const senaRow = new ActionRowBuilder().addComponents(senaButton);
@@ -56,7 +56,7 @@ module.exports = {
                 .setColor('#9b59b6') 
                 .setTitle('💜 ตัวละคร: มิเรย์ (Mirei)')
                 .setDescription('ได้รับยศพิเศษ <@&1490129026990473386>') 
-                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1490131800092184737/TA-2026-04-03-18-10-00-1FemaleBe-1722839310-0.png?ex=69d2f0e2&is=69d19f62&hm=877cd2199266e65f6a7b4788b922513d730f377056c88c2a882640bb023d10ec&=&format=webp&quality=lossless&width=960&height=960');
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1492088560193503303/TA-2026-04-03-18-10-00-1FemaleBe-1722839310-0.png?ex=69da0f42&is=69d8bdc2&hm=ec42591b890a7ba2855ac1746ca7047e555a4af678694c160b64b423cc6e5e17&=&format=webp&quality=lossless&width=960&height=960');
 
             const mireiButton = new ButtonBuilder().setCustomId('buy_mirei').setLabel('💜 โดเนทให้ มิเรย์ (20 บาท)').setStyle(ButtonStyle.Secondary); 
             const mireiRow = new ActionRowBuilder().addComponents(mireiButton);
