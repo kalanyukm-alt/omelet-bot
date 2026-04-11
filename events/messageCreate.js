@@ -7,29 +7,21 @@ module.exports = {
         if (message.author.bot) return;
 
         // 🚨 --- ระบบยามรักษาความปลอดภัย: ดักจับการ Forward --- 🚨
-        // ตรวจสอบว่าข้อความนี้ถูก Forward มาหรือไม่ (เช็คจาก Flag และ Snapshot)
         const isForwarded = message.flags.has(1 << 14) || (message.messageSnapshots && message.messageSnapshots.size > 0) || message.reference?.type === 2;
 
         if (isForwarded) {
-            // สั่งลบข้อความที่ Forward มาทิ้งทันที
             await message.delete().catch(err => console.log('ลบข้อความไม่ได้:', err));
-            
-            // ให้บอทเด้งด่า/เตือนคนส่ง
             const warningMsg = await message.channel.send(`🚫 <@${message.author.id}> **ไม่อนุญาตให้ Forward ข้อความเข้ามาในห้องนี้นะครับ!**`);
-            
-            // ลบคำเตือนทิ้งภายใน 5 วินาที เพื่อไม่ให้ห้องรก
             setTimeout(() => {
                 warningMsg.delete().catch(() => {});
             }, 5000);
-            
-            return; // จบการทำงานของโค้ดตรงนี้เลย ไม่ต้องทะลุไปรันโค้ดอื่นต่อ
+            return; 
         }
         // ----------------------------------------------------
 
-        // โค้ดสร้างเมนูเดิมของคุณ
         if (message.content === '!สร้างเมนู') {
             
-            // --- ก้อนที่ 1: ของยูริ (10 บาท) ---
+            // --- ก้อนที่ 1: ของยูริ (12 บาท) ---
             const yuriEmbed = new EmbedBuilder()
                 .setColor('#356bff')
                 .setTitle('🎀 ตัวละคร: ยูริ (Yuri)')
@@ -72,6 +64,17 @@ module.exports = {
             const lalinButton = new ButtonBuilder().setCustomId('buy_lalin').setLabel('🩵 โดเนทให้ ลลิน (15 บาท)').setStyle(ButtonStyle.Secondary);
             const lalinRow = new ActionRowBuilder().addComponents(lalinButton);
             await message.channel.send({ embeds: [lalinEmbed], components: [lalinRow] });
+
+            // --- 🎀 ก้อนที่ 5: ยูริ M4 (15 บาท) ---
+            const yurim4Embed = new EmbedBuilder()
+                .setColor('#ff4da6') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🎀 ตัวละคร: ยูริ (Yuri) M4')
+                .setDescription('ได้รับยศพิเศษ <@&1492549297617502279>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1492550342766891089/TA-2026-04-11-07-04-05-1girlbeau-2666881247-0.png?ex=69dbbd53&is=69da6bd3&hm=ffba4fa399a8520aee9773ef2fd3849e5737c2d69b6c988a65b62645f53f84d0&');
+
+            const yurim4Button = new ButtonBuilder().setCustomId('buy_yurim4').setLabel('🎀 โดเนทให้ ยูริ M4 (15 บาท)').setStyle(ButtonStyle.Danger); // ใช้ปุ่มสีแดง (Danger)
+            const yurim4Row = new ActionRowBuilder().addComponents(yurim4Button);
+            await message.channel.send({ embeds: [yurim4Embed], components: [yurim4Row] });
 
             await message.delete();
         }
