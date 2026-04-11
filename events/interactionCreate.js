@@ -21,7 +21,7 @@ module.exports = {
             } else if (interaction.customId === 'buy_lalin') { 
                 modalId = 'modal_lalin';
                 modalTitle = 'โดเนทให้ ลลิน (15 บาท)';
-            }else {
+            } else {
                 return;
             }
 
@@ -144,7 +144,8 @@ module.exports = {
                 // เช็คผลการดึงเงิน
                 const finalData = result.redeemData;
                 if (finalData.status.code === 'SUCCESS') {
-                    const amount = parseInt(finalData.data.my_ticket.amount_baht);
+                    // 💡 แก้ไขตรงนี้: ใช้ voucherAmount ที่เช็คได้จากตอนแรก แทนการไปงมหาจากใบเสร็จ
+                    const amount = voucherAmount; 
                     await interaction.member.roles.add(roleIdToGive);
                     await interaction.editReply(`✅ รับเงินสำเร็จ! จำนวน **${amount} บาท**\n🎉 ระบบได้ทำการมอบยศ **${roleName}** ให้คุณเรียบร้อยแล้ว ขอบคุณที่สนับสนุนครับ!`);
                     if (logChannel) logChannel.send(`🟢 **[โดเนทสำเร็จ]** \`${interaction.user.tag}\` โดเนทสำเร็จ **${amount} บาท** -> ได้รับยศ **${roleName}**`);
