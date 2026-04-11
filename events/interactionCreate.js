@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } = require('discord.js');
 const { chromium } = require('playwright'); // 📌 อาวุธทะลวงเกราะของเรา (ห้ามทิ้งเด็ดขาด!)
 
 // ===== CONFIG: ข้อมูลตัวละคร (เพิ่มตัวใหม่แค่มาแก้ตรงนี้) =====
@@ -39,7 +39,8 @@ module.exports = {
 
         // ─── กรอก Modal → ประมวลผล ───
         if (interaction.isModalSubmit()) {
-            await interaction.deferReply({ ephemeral: true });
+            // 💡 อัปเดตใหม่ล่าสุด: ใช้ MessageFlags.Ephemeral แทนแบบเก่า เพื่อลบคำเตือนสีเหลือง
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             const config = MODAL_TO_CONFIG[interaction.customId];
             if (!config) return;
