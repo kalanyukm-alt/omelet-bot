@@ -39,13 +39,11 @@ module.exports = {
         }
 
         if (interaction.isModalSubmit()) {
-            // ⏳ บอก Discord ให้รอแป๊บนะ เพราะเปิดเบราว์เซอร์อาจจะใช้เวลา 3-5 วินาที
             await interaction.deferReply({ ephemeral: true });
 
             const twLink = interaction.fields.getTextInputValue('truemoney_link');
             const twLinkRegex = /https:\/\/gift\.truemoney\.com\/campaign\/\?v=([a-zA-Z0-9]+)/;
             const match = twLink.match(twLinkRegex);
-
             const logChannel = interaction.client.channels.cache.get(process.env.LOG_CHANNEL);
 
             if (!match) {
@@ -82,28 +80,36 @@ module.exports = {
 
             let browser;
             try {
-                // 🎭 1. เปิด Google Chrome ล่องหน
                 browser = await chromium.launch({ headless: true });
                 const context = await browser.newContext({
                     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
                 });
                 const page = await context.newPage();
-
-                // 🎭 2. วิ่งไปหน้าเว็บทรูมันนี่ เพื่อให้ Cloudflare ตรวจคุกกี้ (จำลองว่าเราคือคนจริงๆ ที่กดเข้าเว็บ)
                 await page.goto(`https://gift.truemoney.com/campaign/?v=${voucherHash}`, { waitUntil: 'networkidle' });
 
-                // 🎭 3. ฝังตัวเข้าไปดึงข้อมูลจาก "ข้างใน" เบราว์เซอร์เลย! รปภ. จับไม่ได้แน่นอน
-                const result = await page.evaluate(async ({ hash, phone }) => {
+                // 🎭 3. ฝังตัวเข้าไปทำงานข้างในเบราว์เซอร์ (ระบบใหม่ ปลอดภัย 100%)
+                const result = await page.evaluate(async ({ hash, phone, expected }) => {
                     
-                    // ตรวจสอบซอง
+                    // 1️⃣ ตรวจสอบซอง
                     const verifyRes = await fetch(`https://gift.truemoney.com/campaign/vouchers/${hash}/verify?mobile=${phone}`);
                     const verifyData = await verifyRes.json();
 
                     if (verifyData.status.code !== 'SUCCESS') {
-                        return { step: 'verify', data: verifyData };
+                        return { step: 'verify_failed', data: verifyData }; // ซองมีปัญหา เบรกทันที
                     }
 
-                    // ขอดึงเงิน
+                    // 2️⃣ งัดแงะหายอดเงินแบบครอบจักรวาล (เกราะป้องกันบอทพัง)
+                    const vData = verifyData.data || {};
+                    // หาตัวเลขจากทุกซอกทุกมุมที่ทรูมันนี่อาจจะซ่อนไว้
+                    const amountStr = vData.voucher_profile?.amount_baht || vData.voucher?.amount_baht || vData.amount_baht || '0';
+                    const voucherAmount = parseFloat(amountStr);
+
+                    // 3️⃣ ตรวจสอบยอดเงินก่อนดึง! (ป้องกันการโกง/กินฟรี)
+                    if (voucherAmount < expected) {
+                        return { step: 'insufficient', amount: voucherAmount }; // เงินไม่พอ ถอยออกมาโดยไม่แตะเงิน!
+                    }
+
+                    // 4️⃣ ยอดเงินผ่านฉลุย ดึงเงินเข้ากระเป๋าเลย!
                     const redeemRes = await fetch(`https://gift.truemoney.com/campaign/vouchers/${hash}/redeem`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -111,17 +117,16 @@ module.exports = {
                     });
                     const redeemData = await redeemRes.json();
 
-                    return { step: 'redeem', verifyData: verifyData, redeemData: redeemData };
+                    return { step: 'redeemed', amount: voucherAmount, redeemData: redeemData };
 
-                }, { hash: voucherHash, phone: phoneNumber });
+                }, { hash: voucherHash, phone: phoneNumber, expected: expectedAmount });
 
-                // ปิดเบราว์เซอร์เมื่อทำภารกิจเสร็จ
                 await browser.close();
 
-                // --- 🎯 จัดการผลลัพธ์ที่ได้มาจากเบราว์เซอร์ ---
+                // --- 🎯 จัดการผลลัพธ์ที่ส่งกลับมา ---
                 
-                if (result.step === 'verify') {
-                    // ถ้าพังตั้งแต่ตอนตรวจซอง
+                if (result.step === 'verify_failed') {
+                    // กรณีตรวจซองไม่ผ่าน (เช่น โดนรับไปแล้ว)
                     const errCode = result.data.status.code;
                     let errorMsg = `❌ ไม่สามารถตรวจสอบซองได้ (รหัสข้อผิดพลาด: ${errCode})`;
                     
@@ -130,45 +135,36 @@ module.exports = {
                     
                     await interaction.editReply(errorMsg);
                     if (logChannel) logChannel.send(`🔴 **[ทำรายการล้มเหลว]** \`${interaction.user.tag}\` สาเหตุ: ตรวจสอบซองไม่ผ่าน (${errCode})`);
-                    return;
-                }
-
-                // ถ้าตรวจซองผ่าน เช็คยอดเงิน
-                const voucherAmount = parseFloat(result.verifyData.data.voucher_profile.amount_baht);
-                if (voucherAmount < expectedAmount) {
-                    await interaction.editReply(`❌ **ยอดเงินไม่พอครับ!**\nซองนี้มีเงิน **${voucherAmount} บาท** (ขั้นต่ำสำหรับ ${roleName} คือ ${expectedAmount} บาท)\n*ไม่ต้องกังวลครับ บอทยังไม่ได้ดึงเงินของคุณไป ลิงก์ซองนี้ยังใช้งานได้ปกติครับ*`);
-                    if (logChannel) logChannel.send(`🟡 **[เงินไม่พอ - ไม่ได้รับซอง]** \`${interaction.user.tag}\` โดเนทมาแค่ **${voucherAmount} บาท** (ต้องการ ${expectedAmount}) -> เล็งยศ **${roleName}**`);
-                    return;
-                }
-
-                // เช็คผลการดึงเงิน
-                const finalData = result.redeemData;
-                if (finalData.status.code === 'SUCCESS') {
-                    // 💡 แก้ไขตรงนี้: ใช้ voucherAmount ที่เช็คได้จากตอนแรก แทนการไปงมหาจากใบเสร็จ
-                    const amount = voucherAmount; 
-                    await interaction.member.roles.add(roleIdToGive);
-                    await interaction.editReply(`✅ รับเงินสำเร็จ! จำนวน **${amount} บาท**\n🎉 ระบบได้ทำการมอบยศ **${roleName}** ให้คุณเรียบร้อยแล้ว ขอบคุณที่สนับสนุนครับ!`);
-                    if (logChannel) logChannel.send(`🟢 **[โดเนทสำเร็จ]** \`${interaction.user.tag}\` โดเนทสำเร็จ **${amount} บาท** -> ได้รับยศ **${roleName}**`);
-                } else {
-                    const finalErrCode = finalData.status.code;
-                    let errorMsg = `❌ ดึงเงินไม่สำเร็จ (รหัสข้อผิดพลาด: ${finalErrCode})`;
-                    
-                    if (finalErrCode === 'CANNOT_GET_OWN_VOUCHER') {
-                        errorMsg = '✅ บอทตรวจสอบซองสำเร็จ! **แต่รับเงินไม่ได้เพราะ เป็นซองของคุณเองครับ** (ทรูมันนี่บล็อกการรับซองตัวเอง)';
+                } 
+                else if (result.step === 'insufficient') {
+                    // กรณีเงินไม่พอ (บอทยังไม่ได้ดึงเงินมานะ!)
+                    await interaction.editReply(`❌ **ยอดเงินไม่พอครับ!**\nซองนี้มีเงิน **${result.amount} บาท** (ขั้นต่ำสำหรับ ${roleName} คือ ${expectedAmount} บาท)\n*ไม่ต้องกังวลครับ บอทยังไม่ได้ดึงเงินของคุณไป ลิงก์ซองนี้ยังใช้งานได้ปกติครับ*`);
+                    if (logChannel) logChannel.send(`🟡 **[เงินไม่พอ]** \`${interaction.user.tag}\` ส่งซองมา **${result.amount} บาท** (เล็งยศ ${roleName} ราคา ${expectedAmount} บาท)`);
+                } 
+                else if (result.step === 'redeemed') {
+                    // กรณีดูดเงินสำเร็จ
+                    const finalData = result.redeemData;
+                    if (finalData.status.code === 'SUCCESS') {
+                        await interaction.member.roles.add(roleIdToGive);
+                        await interaction.editReply(`✅ รับเงินสำเร็จ! จำนวน **${result.amount} บาท**\n🎉 ระบบได้ทำการมอบยศ **${roleName}** ให้คุณเรียบร้อยแล้ว ขอบคุณที่สนับสนุนครับ!`);
+                        if (logChannel) logChannel.send(`🟢 **[โดเนทสำเร็จ]** \`${interaction.user.tag}\` โดเนทสำเร็จ **${result.amount} บาท** -> ได้รับยศ **${roleName}**`);
+                    } else {
+                        const finalErrCode = finalData.status.code;
+                        let errorMsg = `❌ ดึงเงินไม่สำเร็จ (รหัสข้อผิดพลาด: ${finalErrCode})`;
+                        if (finalErrCode === 'CANNOT_GET_OWN_VOUCHER') {
+                            errorMsg = '✅ บอทตรวจสอบซองสำเร็จ! **แต่รับเงินไม่ได้เพราะ เป็นซองของคุณเองครับ** (ทรูมันนี่บล็อกการรับซองตัวเอง)';
+                        }
+                        await interaction.editReply(errorMsg);
+                        if (logChannel) logChannel.send(`🔴 **[Error ดึงเงินล้มเหลว]** \`${interaction.user.tag}\` รหัสข้อผิดพลาด: ${finalErrCode}`);
                     }
-                    
-                    await interaction.editReply(errorMsg);
-                    if (logChannel) logChannel.send(`🔴 **[Error ดึงเงินล้มเหลว]** \`${interaction.user.tag}\` รหัสข้อผิดพลาด: ${finalErrCode}`);
                 }
 
             } catch (error) {
-                if (browser) await browser.close(); // ป้องกันเบราว์เซอร์ค้างในเครื่อง
-                
+                if (browser) await browser.close(); 
                 console.log('\n========================================');
                 console.log('🚨 สแกนพบข้อผิดพลาด:');
                 console.log(error.message);
                 console.log('========================================\n');
-
                 await interaction.editReply('❌ เกิดข้อผิดพลาดร้ายแรง! บอทไม่สามารถเข้าถึงระบบทรูมันนี่ได้ครับ');
             }
         }
