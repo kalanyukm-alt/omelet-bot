@@ -19,7 +19,7 @@ module.exports = {
         }
         // ----------------------------------------------------
 
-        if (message.content === '!สร้างเมนู') {
+        if (message.content === '!up') {
             
             // --- ก้อนที่ 1: ของยูริ (12 บาท) ---
             const yuriEmbed = new EmbedBuilder()
@@ -47,7 +47,7 @@ module.exports = {
             const mireiEmbed = new EmbedBuilder()
                 .setColor('#9b59b6') 
                 .setTitle('💜 ตัวละคร: มิเรย์ (Mirei)')
-                .setDescription('ได้รับยศพิเศษ <@&1490129026990473386>') 
+                .setDescription('ได้รับยศพิเศษ <@&1493224189841117278>') 
                 .setImage('https://media.discordapp.net/attachments/1489853742462533762/1492088560193503303/TA-2026-04-03-18-10-00-1FemaleBe-1722839310-0.png?ex=69da0f42&is=69d8bdc2&hm=ec42591b890a7ba2855ac1746ca7047e555a4af678694c160b64b423cc6e5e17&=&format=webp&quality=lossless&width=960&height=960');
 
             const mireiButton = new ButtonBuilder().setCustomId('buy_mirei').setLabel('💜 โดเนทให้ มิเรย์ (20 บาท)').setStyle(ButtonStyle.Secondary); 
