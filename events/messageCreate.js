@@ -19,8 +19,8 @@ module.exports = {
         }
         // ----------------------------------------------------
 
-        if (message.content === '!up') {
-            S
+        if (message.content === '!สร้างเมนู') {
+            
             // --- ก้อนที่ 1: ของยูริ (12 บาท) ---
             const yuriEmbed = new EmbedBuilder()
                 .setColor('#356bff')
