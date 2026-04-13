@@ -83,7 +83,7 @@ module.exports = {
                 .setDescription('ได้รับยศพิเศษ <@&1493215773663952906>') 
                 .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1493216667973455943/TA-2026-04-12-21-50-45-1girlbeau-2767750067.png?ex=69de29e4&is=69dcd864&hm=d0d648a94790596f2202808ad1b0c3c103218823eeaf6a79e8d9d2f10c7bda86&');
 
-            const mireiPresidentButton = new ButtonBuilder().setCustomId('buy_mirei_president').setLabel('🍇 โดเนทให้ มิเรย์ - ประธานนักเรียน (15 บาท)').setStyle(ButtonStyle.Danger);
+            const mireiPresidentButton = new ButtonBuilder().setCustomId('buy_mirei_president').setLabel('🍇 โดเนทให้ มิเรย์ - ประธานนักเรียน (15 บาท)').setStyle(ButtonStyle.Primary);
             const mireiPresidentRow = new ActionRowBuilder().addComponents(mireiPresidentButton);
             await message.channel.send({ embeds: [mireiPresidentEmbed], components: [mireiPresidentRow] });
 
