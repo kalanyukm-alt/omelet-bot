@@ -19,8 +19,8 @@ module.exports = {
         }
         // ----------------------------------------------------
 
-        if (message.content === '!สร้างเมนู') {
-            
+        if (message.content === '!up') {
+            S
             // --- ก้อนที่ 1: ของยูริ (12 บาท) ---
             const yuriEmbed = new EmbedBuilder()
                 .setColor('#356bff')
@@ -75,6 +75,17 @@ module.exports = {
             const yurim4Button = new ButtonBuilder().setCustomId('buy_yurim4').setLabel('🎀 โดเนทให้ ยูริ M4 (15 บาท)').setStyle(ButtonStyle.Danger); // ใช้ปุ่มสีแดง (Danger)
             const yurim4Row = new ActionRowBuilder().addComponents(yurim4Button);
             await message.channel.send({ embeds: [yurim4Embed], components: [yurim4Row] });
+
+            // --- 🍇 ก้อนที่ 6: มิเรย์ (Mirei) - ประธานนักเรียน (15 บาท) ---
+            const mireiPresidentEmbed = new EmbedBuilder()
+                .setColor('#de70ff') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🍇 ตัวละคร: มิเรย์ (Mirei) - ประธานนักเรียน')
+                .setDescription('ได้รับยศพิเศษ <@&1493215773663952906>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1493216667973455943/TA-2026-04-12-21-50-45-1girlbeau-2767750067.png?ex=69de29e4&is=69dcd864&hm=d0d648a94790596f2202808ad1b0c3c103218823eeaf6a79e8d9d2f10c7bda86&');
+
+            const mireiPresidentButton = new ButtonBuilder().setCustomId('buy_mirei_president').setLabel('🍇 โดเนทให้ มิเรย์ - ประธานนักเรียน (15 บาท)').setStyle(ButtonStyle.Danger);
+            const mireiPresidentRow = new ActionRowBuilder().addComponents(mireiPresidentButton);
+            await message.channel.send({ embeds: [mireiPresidentEmbed], components: [mireiPresidentRow] });
 
             await message.delete();
         }
