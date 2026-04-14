@@ -87,6 +87,17 @@ module.exports = {
             const mireiPresidentRow = new ActionRowBuilder().addComponents(mireiPresidentButton);
             await message.channel.send({ embeds: [mireiPresidentEmbed], components: [mireiPresidentRow] });
 
+             // --- 🧁 ก้อนที่ 6: โมโมกะ (Momoka) (14 บาท) ---
+            const momokaEmbed = new EmbedBuilder()
+                .setColor('#de70ff') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🧁 ตัวละคร: โมโมกะ (Momoka)')
+                .setDescription('ได้รับยศพิเศษ <@&1493670409110028469>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1493671258523439414/TA-2026-04-14-06-15-48-upperbody-3483496300-0.png?ex=69dfd143&is=69de7fc3&hm=4afdfa1ba806b24c61c9f6cac18919ee511ab353dc7d224bf899291b502f7c4a&');
+
+            const momokaButton = new ButtonBuilder().setCustomId('buy_momoka').setLabel('🧁 โดเนทให้ โมโมกะ (14 บาท)').setStyle(ButtonStyle.Danger);
+            const momokaRow = new ActionRowBuilder().addComponents(momokaButton);
+            await message.channel.send({ embeds: [momokaEmbed], components: [momokaRow] });
+
             await message.delete();
         }
     },
