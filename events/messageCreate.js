@@ -98,6 +98,17 @@ module.exports = {
             const momokaRow = new ActionRowBuilder().addComponents(momokaButton);
             await message.channel.send({ embeds: [momokaEmbed], components: [momokaRow] });
 
+            // --- 🌸 ก้อนที่ 7: เมล (Melle) (14 บาท) ---
+            const melleEmbed = new EmbedBuilder()
+                .setColor('#ff9e9e') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🌸 ตัวละคร: เมล (Melle)')
+                .setDescription('ได้รับยศพิเศษ <@&1494326775314911242>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1494327692630163497/TA-2026-04-13-07-25-26-upperbody-885983960.png?ex=69e2349d&is=69e0e31d&hm=9e989d13bbc3cf97a7f9a4bb224a2f211df5b8719d83d9a5e08c5c48fd540a7f&');
+
+            const melleButton = new ButtonBuilder().setCustomId('buy_melle').setLabel('🌸 โดเนทให้ เมล (14 บาท)').setStyle(ButtonStyle.Primary);
+            const melleRow = new ActionRowBuilder().addComponents(melleButton);
+            await message.channel.send({ embeds: [melleEmbed], components: [melleRow] });
+
             await message.delete();
         }
     },
