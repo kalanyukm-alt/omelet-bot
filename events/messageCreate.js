@@ -109,6 +109,17 @@ module.exports = {
             const melleRow = new ActionRowBuilder().addComponents(melleButton);
             await message.channel.send({ embeds: [melleEmbed], components: [melleRow] });
 
+            // --- ♣️ ก้อนที่ 8: นิลยา (Nillaya) (10 บาท) ---
+            const nillayaEmbed = new EmbedBuilder()
+                .setColor('#ff9e9e') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('♣️ ตัวละคร: นิลยา (Nillaya)')
+                .setDescription('ได้รับยศพิเศษ <@&1495476449275023552>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1495477001736294491/TA-2026-04-13-17-33-48-upperbody-1610254243-0.png?ex=69e662fd&is=69e5117d&hm=8197c6c666351d53f8e4ebdd74da5bfc7ecc2e0629cbe1ebbcfa3625d7ac6caf&');
+
+            const nillayaButton = new ButtonBuilder().setCustomId('buy_nillaya').setLabel('♣️ โดเนทให้ นิลยา (10 บาท)').setStyle(ButtonStyle.Primary);
+            const nillayaRow = new ActionRowBuilder().addComponents(nillayaButton);
+            await message.channel.send({ embeds: [nillayaEmbed], components: [nillayaRow] });
+
             await message.delete();
         }
     },
