@@ -11,7 +11,9 @@ const ROLE_CONFIG = {
     buy_mirei_president: { modalId: 'modal_mirei_president', title: 'โดเนทให้ มิเรย์ - ประธานนักเรียน (15 บาท)', roleId: '1493215773663952906', roleName: 'มิเรย์ - ประธานนักเรียน', amount: 15 }, // 🍇 เพิ่มของ มิเรย์ - ประธานนักเรียน เรียบร้อย!
     buy_momoka: { modalId: 'modal_momoka', title: 'โดเนทให้ โมโมกะ (14 บาท)', roleId: '1493670409110028469', roleName: 'โมโมกะ', amount: 14 }, // 🧁 เพิ่มของ โมโมกะ เรียบร้อย!
     buy_melle: { modalId: 'modal_melle', title: 'โดเนทให้ เมล (14 บาท)', roleId: '1494326775314911242', roleName: 'เมล', amount: 14 }, // 🌸 เพิ่มของ เมล เรียบร้อย!
-    buy_nillaya: { modalId: 'modal_nillaya', title: 'โดเนทให้ นิลยา (10 บาท)', roleId: '1495476449275023552', roleName: 'นิลยา', amount: 10 } // ♣️ เพิ่มของ นิลยา เรียบร้อย!
+    buy_nillaya: { modalId: 'modal_nillaya', title: 'โดเนทให้ นิลยา (10 บาท)', roleId: '1495476449275023552', roleName: 'นิลยา', amount: 10 }, // ♣️ เพิ่มของ นิลยา เรียบร้อย!
+    buy_jian: { modalId: 'modal_jian', title: 'โดเนทให้ จีอัน (10 บาท)', roleId: '1495986170411090000', roleName: 'จีอัน', amount: 10 }, // 🍆 เพิ่มของ จีอัน เรียบร้อย!
+    buy_prim: { modalId: 'modal_prim', title: 'โดเนทให้ พริม (15 บาท)', roleId: '1495986401727090798', roleName: 'พริม', amount: 15 } // 🐑 เพิ่มของ พริม เรียบร้อย!
 };
 
 const MODAL_TO_CONFIG = Object.fromEntries(

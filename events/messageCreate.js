@@ -120,6 +120,29 @@ module.exports = {
             const nillayaRow = new ActionRowBuilder().addComponents(nillayaButton);
             await message.channel.send({ embeds: [nillayaEmbed], components: [nillayaRow] });
 
+            // --- 🍆 ก้อนที่ 9: จีอัน (Jian) (10 บาท) ---
+            const jianEmbed = new EmbedBuilder()
+                .setColor('#481849') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🍆 ตัวละคร: จีอัน (Jian)')
+                .setDescription('ได้รับยศพิเศษ <@&1495986170411090000>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1495986911138025502/TA-2026-04-15-00-35-59-upperbody-1489204379.png?ex=69e83de1&is=69e6ec61&hm=83461c0bc0a6f0f37883635a37ac7738a09202e1b0d9015624fb2ee86fbe51cb&');
+
+            const jianButton = new ButtonBuilder().setCustomId('buy_jian').setLabel('🍆 โดเนทให้ จีอัน (10 บาท)').setStyle(ButtonStyle.Primary);
+            const jianRow = new ActionRowBuilder().addComponents(jianButton);
+            await message.channel.send({ embeds: [jianEmbed], components: [jianRow] });
+
+            // --- 🐑 ก้อนที่ 10: พริม (Prim) (15 บาท) ---
+            const primEmbed = new EmbedBuilder()
+                .setColor('#481849') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🐑 ตัวละคร: พริม (Prim)')
+                .setDescription('ได้รับยศพิเศษ <@&1495986401727090798>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1495987040473452554/TA-2026-04-16-15-37-09-upperbody-1322587126.png?ex=69e83e00&is=69e6ec80&hm=121f8e736c66f0857460241a9bd5626085bf3453c3b169fcc09975b8647afdc0&');
+
+            const primButton = new ButtonBuilder().setCustomId('buy_prim').setLabel('🐑 โดเนทให้ พริม (15 บาท)').setStyle(ButtonStyle.Primary);
+            const primRow = new ActionRowBuilder().addComponents(primButton);
+            await message.channel.send({ embeds: [primEmbed], components: [primRow] });
+
+
             await message.delete();
         }
     },
