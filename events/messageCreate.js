@@ -142,6 +142,16 @@ module.exports = {
             const primRow = new ActionRowBuilder().addComponents(primButton);
             await message.channel.send({ embeds: [primEmbed], components: [primRow] });
 
+            // --- 🐾 ก้อนที่ 11: จีมิน (Jimin) (15 บาท) ---
+            const jiminEmbed = new EmbedBuilder()
+                .setColor('#481849') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🐾 ตัวละคร: จีมิน (Jimin)')
+                .setDescription('ได้รับยศพิเศษ <@&1496895025156722688>') 
+                .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1496895565420826624/TA-2026-04-21-14-41-01-1woman_1-902977942.png?ex=69eb8c21&is=69ea3aa1&hm=dacef14fc65dea18d76d232e095258903c09db7b3881f654e1d1d507757dcd16&');
+
+            const jiminButton = new ButtonBuilder().setCustomId('buy_jimin').setLabel('🐾 โดเนทให้ จีมิน (15 บาท)').setStyle(ButtonStyle.Primary);
+            const jiminRow = new ActionRowBuilder().addComponents(jiminButton);
+            await message.channel.send({ embeds: [jiminEmbed], components: [jiminRow] });
 
             await message.delete();
         }
