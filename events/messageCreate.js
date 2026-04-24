@@ -133,7 +133,7 @@ module.exports = {
 
             // --- 🐑 ก้อนที่ 10: พริม (Prim) (15 บาท) ---
             const primEmbed = new EmbedBuilder()
-                .setColor('#481849') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setColor('#e4e4e4') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🐑 ตัวละคร: พริม (Prim)')
                 .setDescription('ได้รับยศพิเศษ <@&1495986401727090798>') 
                 .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1495987040473452554/TA-2026-04-16-15-37-09-upperbody-1322587126.png?ex=69e83e00&is=69e6ec80&hm=121f8e736c66f0857460241a9bd5626085bf3453c3b169fcc09975b8647afdc0&');
@@ -144,7 +144,7 @@ module.exports = {
 
             // --- 🐾 ก้อนที่ 11: จีมิน (Jimin) (15 บาท) ---
             const jiminEmbed = new EmbedBuilder()
-                .setColor('#481849') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setColor('#202020') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🐾 ตัวละคร: จีมิน (Jimin)')
                 .setDescription('ได้รับยศพิเศษ <@&1496895025156722688>') 
                 .setImage('https://cdn.discordapp.com/attachments/1489853742462533762/1496895565420826624/TA-2026-04-21-14-41-01-1woman_1-902977942.png?ex=69eb8c21&is=69ea3aa1&hm=dacef14fc65dea18d76d232e095258903c09db7b3881f654e1d1d507757dcd16&');
@@ -152,6 +152,17 @@ module.exports = {
             const jiminButton = new ButtonBuilder().setCustomId('buy_jimin').setLabel('🐾 โดเนทให้ จีมิน (15 บาท)').setStyle(ButtonStyle.Primary);
             const jiminRow = new ActionRowBuilder().addComponents(jiminButton);
             await message.channel.send({ embeds: [jiminEmbed], components: [jiminRow] });
+
+            // --- 🍦 ก้อนที่ 12: โคเล็ตต์ (Colette) (12 บาท) ---
+            const coletteEmbed = new EmbedBuilder()
+                .setColor('#fff893') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🍦 ตัวละคร: โคเล็ตต์ (Colette)')
+                .setDescription('ได้รับยศพิเศษ <@&1497209324005494944>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1497209969768923328/TA-2026-04-17-11-31-41-upperbody-1878107886.png?ex=69ecb0f1&is=69eb5f71&hm=8add92bab0794b88d56cda89853f25e2d434d032d2d303a5517804907c9f4564&=&format=webp&quality=lossless&width=876&height=876');
+
+            const coletteButton = new ButtonBuilder().setCustomId('buy_colette').setLabel('🍦 โดเนทให้ โคเล็ตต์ (12 บาท)').setStyle(ButtonStyle.Primary);
+            const coletteRow = new ActionRowBuilder().addComponents(coletteButton);
+            await message.channel.send({ embeds: [coletteEmbed], components: [coletteRow] });
 
             await message.delete();
         }
