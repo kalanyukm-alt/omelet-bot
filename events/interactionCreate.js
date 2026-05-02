@@ -17,6 +17,8 @@ const ROLE_CONFIG = {
     buy_jimin: { modalId: 'modal_jimin', title: 'โดเนทให้ จีมิน (15 บาท)', roleId: '1496895025156722688', roleName: 'จีมิน', amount: 15 }, // 🐾 เพิ่มของ จีมิน เรียบร้อย!
     buy_colette: { modalId: 'modal_colette', title: 'โดเนทให้ โคเล็ตต์ (12 บาท)', roleId: '1497209324005494944', roleName: 'โคเล็ตต์', amount: 12 }, // 🍦 เพิ่มของ โคเล็ตต์ เรียบร้อย!
     buy_florencia: { modalId: 'modal_florencia', title: 'โดเนทให้ ฟลอเรนเซีย (10 บาท)', roleId: '1499107236587245668', roleName: 'ฟลอเรนเซีย', amount: 10 }, // 🍧 เพิ่มของ ฟลอเรนเซีย เรียบร้อย!
+    buy_lume: { modalId: 'modal_lume', title: 'โดเนทให้ ลูเม (10 บาท)', roleId: '1499995613649961000', roleName: 'ลูเม', amount: 10 }, // 🧸 เพิ่มของ ลูเม เรียบร้อย!
+    buy_arcania: { modalId: 'modal_arcania', title: 'โดเนทให้ อาร์คาเนีย (10 บาท)', roleId: '1499995786069409812', roleName: 'อาร์คาเนีย', amount: 10 }, // 🐕 เพิ่มของ อาร์คาเนีย เรียบร้อย!
 };
 
 const MODAL_TO_CONFIG = Object.fromEntries(
