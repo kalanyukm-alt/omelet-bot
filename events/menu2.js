@@ -41,8 +41,18 @@ module.exports = {
             const arcaniaRow = new ActionRowBuilder().addComponents(arcaniaButton);
             await message.channel.send({ embeds: [arcaniaEmbed], components: [arcaniaRow] });
 
+             // --- 🧤 ก้อนที่ 4: เนเธอร่า (Nethera) (10 บาท) ---
+            const netheraEmbed = new EmbedBuilder()
+                .setColor('#931ba3') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🧤 ตัวละคร: เนเธอร่า (Nethera)')
+                .setDescription('ได้รับยศพิเศษ <@&1501427896278061136>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1501428605467492453/TA-2026-04-26-14-36-11-1girl_1.3-3086692428.png?ex=69fc09da&is=69fab85a&hm=0065b505d55f4a7c8eaab321e850dcf666e9e874f21460d3de066756d45e6234&=&format=webp&quality=lossless&width=350&height=350');
 
-            // ลบข้อความคำสั่ง !up2 ทิ้ง
+            const netheraButton = new ButtonBuilder().setCustomId('buy_nethera').setLabel('🧤 โดเนทให้ เนเธอร่า (10 บาท)').setStyle(ButtonStyle.Primary);
+            const netheraRow = new ActionRowBuilder().addComponents(netheraButton);
+            await message.channel.send({ embeds: [netheraEmbed], components: [netheraRow] });
+
+
             await message.delete();
         }
     },
