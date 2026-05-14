@@ -63,6 +63,18 @@ module.exports = {
             const miracielRow = new ActionRowBuilder().addComponents(miracielButton);
             await message.channel.send({ embeds: [miracielEmbed], components: [miracielRow] });
 
+            // --- 🌹 ก้อนที่ 6: เมอร์เซีย (Mercia) (15 บาท) ---
+            const merciaEmbed = new EmbedBuilder()
+                .setColor('#8b122c')
+                .setTitle('🌹 ตัวละคร: เมอร์เซีย (Mercia)')
+                .setDescription('ได้รับยศพิเศษ <@&1504571357520986304>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1504572199862800384/TA-2026-05-01-13-51-45-1girlbeau-2227016643-1.png?ex=6a07798e&is=6a06280e&hm=9040ee5833a2cdc3892920f35fde8cfc176d6319a9f69b4170491f19a32cfc90&=&format=webp&quality=lossless&width=876&height=876');
+
+            const merciaButton = new ButtonBuilder().setCustomId('buy_mercia').setLabel('🌹 โดเนทให้ เมอร์เซีย (15 บาท)').setStyle(ButtonStyle.Primary);
+            const merciaRow = new ActionRowBuilder().addComponents(merciaButton);
+            await message.channel.send({ embeds: [merciaEmbed], components: [merciaRow] });
+
+
 
             await message.delete();
         }
