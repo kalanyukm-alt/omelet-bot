@@ -175,6 +175,17 @@ module.exports = {
             const somjeedRow = new ActionRowBuilder().addComponents(somjeedButton);
             await message.channel.send({ embeds: [somjeedEmbed], components: [somjeedRow] });
 
+            // --- 🖤 ก้อนที่ 14: มูนา (Muna) (20 บาท) ---
+            const munaEmbed = new EmbedBuilder()
+                .setColor('#fff893') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🖤 ตัวละคร: มูนา (Muna)')
+                .setDescription('ได้รับยศพิเศษ <@&1517943037253128406>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1517943780618145812/1.png?ex=6a381ecf&is=6a36cd4f&hm=38b74e2bc12f282021cfeb998b41c6806e530880d88a01484a155a281eccb730&=&format=webp&quality=lossless');
+
+            const munaButton = new ButtonBuilder().setCustomId('buy_muna').setLabel('🖤 โดเนทให้ มูนา (20 บาท)').setStyle(ButtonStyle.Primary);
+            const munaRow = new ActionRowBuilder().addComponents(munaButton);
+            await message.channel.send({ embeds: [munaEmbed], components: [munaRow] });
+
             await message.delete();
         }
     },
