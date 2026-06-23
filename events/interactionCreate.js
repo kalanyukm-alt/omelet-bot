@@ -24,7 +24,8 @@ const ROLE_CONFIG = {
     buy_mercia: { modalId: 'modal_mercia', title: 'โดเนทให้ เมอร์เซีย (15 บาท)', roleId: '1504571357520986304', roleName: 'เมอร์เซีย', amount: 15 }, // 🌹 เพิ่มของ เมอร์เซีย เรียบร้อย!
     buy_somjeed: { modalId: 'modal_somjeed', title: 'โดเนทให้ ส้มจี๊ด (20 บาท)', roleId: '1517102688779767829', roleName: 'ส้มจี๊ด', amount: 20 }, // 🍹 เพิ่มของ ส้มจี๊ด เรียบร้อย!
     buy_muna: { modalId: 'modal_muna', title: 'โดเนทให้ มูนา (20 บาท)', roleId: '1517943037253128406', roleName: 'มูนา', amount: 20 }, // 🖤 เพิ่มของ มูนา เรียบร้อย!
-};
+    buy_lalinn: { modalId: 'modal_lalinn', title: 'โดเนทให้ ลลิล (20 บาท)', roleId: '1518995242269937836', roleName: 'ลลิล', amount: 20 }, // 🤍 เพิ่มของ ลลิล เรียบร้อย!
+}; 
 
 const MODAL_TO_CONFIG = Object.fromEntries(
     Object.values(ROLE_CONFIG).map(cfg => [cfg.modalId, cfg])

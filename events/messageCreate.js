@@ -186,6 +186,17 @@ module.exports = {
             const munaRow = new ActionRowBuilder().addComponents(munaButton);
             await message.channel.send({ embeds: [munaEmbed], components: [munaRow] });
 
+            // --- 🤍 ก้อนที่ 15: ลลิล (Lalinn) (20 บาท) ---
+            const lalinnEmbed = new EmbedBuilder()
+                .setColor('#ffffff') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🤍 ตัวละคร: ลลิล (Lalinn)')
+                .setDescription('ได้รับยศพิเศษ <@&1518995242269937836>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1518995728305750016/1.png?ex=6a3bf283&is=6a3aa103&hm=e062b4b3839931689332b9d187018e81e197f8ef90fbde32eb90eba334f67bad&=&format=webp&quality=lossless&width=350&height=350');
+
+            const lalinnButton = new ButtonBuilder().setCustomId('buy_lalinn').setLabel('🤍 โดเนทให้ ลลิล (20 บาท)').setStyle(ButtonStyle.Primary);
+            const lalinnRow = new ActionRowBuilder().addComponents(lalinnButton);
+            await message.channel.send({ embeds: [lalinnEmbed], components: [lalinnRow] });
+
             await message.delete();
         }
     },
