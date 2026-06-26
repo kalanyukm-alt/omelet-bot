@@ -197,6 +197,17 @@ module.exports = {
             const lalinnRow = new ActionRowBuilder().addComponents(lalinnButton);
             await message.channel.send({ embeds: [lalinnEmbed], components: [lalinnRow] });
 
+            // --- 🍒 เชอร์รี่ (Cherry) (20 บาท) ---
+            const cherryEmbed = new EmbedBuilder()
+                .setColor('#ff6565') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('🍒 ตัวละคร: เชอร์รี่ (Cherry)')
+                .setDescription('ได้รับยศพิเศษ <@&1520031790243254312>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1520032665661870161/1.png?ex=6a3fb83c&is=6a3e66bc&hm=a0e230bbead0ed23deab2e467e5160e01d6921c718f8c523c3906bede1a6f238&=&format=webp&quality=lossless');
+
+            const cherryButton = new ButtonBuilder().setCustomId('buy_cherry').setLabel('🍒 โดเนทให้ เชอร์รี่ (20 บาท)').setStyle(ButtonStyle.Primary);
+            const cherryRow = new ActionRowBuilder().addComponents(cherryButton);
+            await message.channel.send({ embeds: [cherryEmbed], components: [cherryRow] });
+
             await message.delete();
         }
     },
