@@ -208,6 +208,17 @@ module.exports = {
             const cherryRow = new ActionRowBuilder().addComponents(cherryButton);
             await message.channel.send({ embeds: [cherryEmbed], components: [cherryRow] });
 
+            // --- 📯 เอวา (Ava) (20 บาท) ---
+            const avaEmbed = new EmbedBuilder()
+                .setColor('#ecd491') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('📯 ตัวละคร: เอวา (Ava)')
+                .setDescription('ได้รับยศพิเศษ <@&1520368884828475402>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1520369920582484028/1.png?ex=6a40f254&is=6a3fa0d4&hm=bb4008303dab77b27191d18accfcdb98b2dcde702e20d1d040ec62027578b20f&=&format=webp&quality=lossless&width=350&height=350');
+
+            const avaButton = new ButtonBuilder().setCustomId('buy_ava').setLabel('📯 โดเนทให้ เอวา (20 บาท)').setStyle(ButtonStyle.Primary);
+            const avaRow = new ActionRowBuilder().addComponents(avaButton);
+            await message.channel.send({ embeds: [avaEmbed], components: [avaRow] });
+
             await message.delete();
         }
     },
