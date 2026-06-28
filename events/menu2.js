@@ -74,6 +74,17 @@ module.exports = {
             const merciaRow = new ActionRowBuilder().addComponents(merciaButton);
             await message.channel.send({ embeds: [merciaEmbed], components: [merciaRow] });
 
+            // --- 🩵 ก้อนที่ 7: อิลเซียร์ (Ilsier) (10 บาท) ---
+            const ilsierEmbed = new EmbedBuilder()
+                .setColor('#93b0ff')
+                .setTitle('🌹 ตัวละคร: อิลเซียร์ (Ilsier)')
+                .setDescription('ได้รับยศพิเศษ <@&1520928768900993085>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1520929359962177710/TA-2026-06-28-10-09-34-1girlbeau-2164187468.png?ex=6a42fb58&is=6a41a9d8&hm=719cac95c9676148a3e9424e9c0d0d4bf7c7f47cafdff723b6db09eec7ad8085&=&format=webp&quality=lossless');
+
+            const ilsierButton = new ButtonBuilder().setCustomId('buy_ilsier').setLabel('🌹 โดเนทให้ อิลเซียร์ (10 บาท)').setStyle(ButtonStyle.Primary);
+            const ilsierRow = new ActionRowBuilder().addComponents(ilsierButton);
+            await message.channel.send({ embeds: [ilsierEmbed], components: [ilsierRow] });
+
 
 
             await message.delete();
