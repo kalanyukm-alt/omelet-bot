@@ -197,7 +197,7 @@ module.exports = {
             const lalinnRow = new ActionRowBuilder().addComponents(lalinnButton);
             await message.channel.send({ embeds: [lalinnEmbed], components: [lalinnRow] });
 
-            // --- 🍒 เชอร์รี่ (Cherry) (20 บาท) ---
+            // --- 🍒 16: เชอร์รี่ (Cherry) (20 บาท) ---
             const cherryEmbed = new EmbedBuilder()
                 .setColor('#ff6565') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🍒 ตัวละคร: เชอร์รี่ (Cherry)')
@@ -208,7 +208,7 @@ module.exports = {
             const cherryRow = new ActionRowBuilder().addComponents(cherryButton);
             await message.channel.send({ embeds: [cherryEmbed], components: [cherryRow] });
 
-            // --- 📯 เอวา (Ava) (20 บาท) ---
+            // --- 📯 17: เอวา (Ava) (20 บาท) ---
             const avaEmbed = new EmbedBuilder()
                 .setColor('#ecd491') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('📯 ตัวละคร: เอวา (Ava)')
@@ -218,6 +218,17 @@ module.exports = {
             const avaButton = new ButtonBuilder().setCustomId('buy_ava').setLabel('📯 โดเนทให้ เอวา (20 บาท)').setStyle(ButtonStyle.Primary);
             const avaRow = new ActionRowBuilder().addComponents(avaButton);
             await message.channel.send({ embeds: [avaEmbed], components: [avaRow] });
+
+            // --- 👝 18: พิงกี้ (Pinky) (20 บาท) ---
+            const pinkyEmbed = new EmbedBuilder()
+                .setColor('#ff88a6') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
+                .setTitle('👝 ตัวละคร: พิงกี้ (Pinky)')
+                .setDescription('ได้รับยศพิเศษ <@&1522943041709805720>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1522943613108228297/1.png?ex=6a4a4f44&is=6a48fdc4&hm=b54a8017493fbc64b869cf24fd438fa032a6c8209c23eb12b3b0d6e1b0633f64&=&format=webp&quality=lossless');
+
+            const pinkyButton = new ButtonBuilder().setCustomId('buy_pinky').setLabel('👝 โดเนทให้ พิงกี้ (20 บาท)').setStyle(ButtonStyle.Primary);
+            const pinkyRow = new ActionRowBuilder().addComponents(pinkyButton);
+            await message.channel.send({ embeds: [pinkyEmbed], components: [pinkyRow] });
 
             await message.delete();
         }
