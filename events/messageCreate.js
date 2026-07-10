@@ -241,6 +241,17 @@ module.exports = {
             const kiraRow = new ActionRowBuilder().addComponents(kiraButton);
             await message.channel.send({ embeds: [kiraEmbed], components: [kiraRow] });
 
+            // --- ✨ 20: เอลลี่ (Ellie) (20 บาท) ---
+            const ellieEmbed = new EmbedBuilder()
+                .setColor('#353535')
+                .setTitle('✨ ตัวละคร: เอลลี่ (Ellie)')
+                .setDescription('ได้รับยศพิเศษ <@&1525206620777349140>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1525206528435683368/1.png?ex=6a528ac5&is=6a513945&hm=75108dce9e4d62ab6d4125e4a2644dfa2425ad881035a213fb5dca9f3494f66f&=&format=webp&quality=lossless');
+
+            const ellieButton = new ButtonBuilder().setCustomId('buy_ellie').setLabel('✨ โดเนทให้ เอลลี่ (20 บาท)').setStyle(ButtonStyle.Primary);
+            const ellieRow = new ActionRowBuilder().addComponents(ellieButton);
+            await message.channel.send({ embeds: [ellieEmbed], components: [ellieRow] });
+
             await message.delete();
         }
     },
