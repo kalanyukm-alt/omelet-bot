@@ -230,6 +230,17 @@ module.exports = {
             const pinkyRow = new ActionRowBuilder().addComponents(pinkyButton);
             await message.channel.send({ embeds: [pinkyEmbed], components: [pinkyRow] });
 
+            // --- 🔮 19: คิรา (Kira) (20 บาท) ---
+            const kiraEmbed = new EmbedBuilder()
+                .setColor('#353535')
+                .setTitle('🔮 ตัวละคร: คิรา (Kira)')
+                .setDescription('ได้รับยศพิเศษ <@&1525202804476743772>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1525204904325550261/1.png?ex=6a528942&is=6a5137c2&hm=0c3ecb6f7351b776a9cca27ea92d47ec5e8868e4864ba7c9a28c5b73b70d7fd3&=&format=webp&quality=lossless');
+
+            const kiraButton = new ButtonBuilder().setCustomId('buy_kira').setLabel('🔮 โดเนทให้ คิรา (20 บาท)').setStyle(ButtonStyle.Primary);
+            const kiraRow = new ActionRowBuilder().addComponents(kiraButton);
+            await message.channel.send({ embeds: [kiraEmbed], components: [kiraRow] });
+
             await message.delete();
         }
     },
