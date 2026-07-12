@@ -252,6 +252,28 @@ module.exports = {
             const ellieRow = new ActionRowBuilder().addComponents(ellieButton);
             await message.channel.send({ embeds: [ellieEmbed], components: [ellieRow] });
 
+            // --- 🩷 21: โมจิ (Mochi) (20 บาท) ---
+            const mochiEmbed = new EmbedBuilder()
+                .setColor('#ff96a8')
+                .setTitle('🩷 ตัวละคร: โมจิ (Mochi)')
+                .setDescription('ได้รับยศพิเศษ <@&1525756834860896366>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1525757262486835200/1.png?ex=6a548bae&is=6a533a2e&hm=17ccaa57973d1523d4bd9da8dadbefb1d0850f154d7584d5b03f26219f6619f0&=&format=webp&quality=lossless');
+
+            const mochiButton = new ButtonBuilder().setCustomId('buy_mochi').setLabel('🩷 โดเนทให้ โมจิ (20 บาท)').setStyle(ButtonStyle.Primary);
+            const mochiRow = new ActionRowBuilder().addComponents(mochiButton);
+            await message.channel.send({ embeds: [mochiEmbed], components: [mochiRow] });
+
+            // --- 🥻 22: เพิร์ล (Pearl) (20 บาท) ---
+            const pearlEmbed = new EmbedBuilder()
+                .setColor('#87ffe1')
+                .setTitle('🥻 ตัวละคร: เพิร์ล (Pearl)')
+                .setDescription('ได้รับยศพิเศษ <@&1525758230427598908>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1525758968058744963/1.png?ex=6a548d45&is=6a533bc5&hm=0d90ea66a730d9a39ae5b584280f16a3689f6d495158b584700929c305acc2e6&=&format=webp&quality=lossless');
+
+            const pearlButton = new ButtonBuilder().setCustomId('buy_pearl').setLabel('🥻 โดเนทให้ เพิร์ล (20 บาท)').setStyle(ButtonStyle.Primary);
+            const pearlRow = new ActionRowBuilder().addComponents(pearlButton);
+            await message.channel.send({ embeds: [pearlEmbed], components: [pearlRow] });
+
             await message.delete();
         }
     },
