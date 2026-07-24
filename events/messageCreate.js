@@ -274,6 +274,17 @@ module.exports = {
             const pearlRow = new ActionRowBuilder().addComponents(pearlButton);
             await message.channel.send({ embeds: [pearlEmbed], components: [pearlRow] });
 
+            // --- 🖤 23: มีนา (Mina) (50 บาท) ---
+            const minaEmbed = new EmbedBuilder()
+                .setColor('#171818')
+                .setTitle('🖤 ตัวละคร: มีนา (Mina)')
+                .setDescription('ได้รับยศพิเศษ <@&1530063180968103996>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1530064683380248596/1.png?ex=6a643747&is=6a62e5c7&hm=7b7aefd1cd10cbe8fef8e526b189f3c8ead44ee6b5ab683a00bad7353f7baac4&=&format=webp&quality=lossless');
+
+            const minaButton = new ButtonBuilder().setCustomId('buy_mina').setLabel('🖤 โดเนทให้ มีนา (50 บาท)').setStyle(ButtonStyle.Primary);
+            const minaRow = new ActionRowBuilder().addComponents(minaButton);
+            await message.channel.send({ embeds: [minaEmbed], components: [minaRow] });
+
             await message.delete();
         }
     },
