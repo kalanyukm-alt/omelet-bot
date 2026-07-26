@@ -285,6 +285,17 @@ module.exports = {
             const minaRow = new ActionRowBuilder().addComponents(minaButton);
             await message.channel.send({ embeds: [minaEmbed], components: [minaRow] });
 
+            // --- 🤎 24: มอร์เวีย (Morvea) (50 บาท) ---
+            const morveaEmbed = new EmbedBuilder()
+                .setColor('#9e7575')
+                .setTitle('🤎 ตัวละคร: มอร์เวีย (Morvea)')
+                .setDescription('ได้รับยศพิเศษ <@&1530765429402763315>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1530765918492430336/1.png?ex=6a66c45b&is=6a6572db&hm=38cda0cba741a8e1e7ade98be267ecef52dfcea553363503558b2ac8a61710f4&=&format=webp&quality=lossless&width=350&height=350');
+
+            const morveaButton = new ButtonBuilder().setCustomId('buy_morvea').setLabel('🤎 โดเนทให้ มอร์เวีย (50 บาท)').setStyle(ButtonStyle.Primary);
+            const morveaRow = new ActionRowBuilder().addComponents(morveaButton);
+            await message.channel.send({ embeds: [morveaEmbed], components: [morveaRow] });
+
             await message.delete();
         }
     },
