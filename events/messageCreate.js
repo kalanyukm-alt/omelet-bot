@@ -296,6 +296,17 @@ module.exports = {
             const morveaRow = new ActionRowBuilder().addComponents(morveaButton);
             await message.channel.send({ embeds: [morveaEmbed], components: [morveaRow] });
 
+            // --- 🧈 24: ไอวี่ (Ivy) (50 บาท) ---
+            const ivyEmbed = new EmbedBuilder()
+                .setColor('#ffecae')
+                .setTitle('🧈 ตัวละคร: ไอวี่ (Ivy)')
+                .setDescription('ได้รับยศพิเศษ <@&1531485909655093438>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1531487931154305185/TA-2026-07-24-06-40-31-solo1girl-61820887-0.png?ex=6a6964c8&is=6a681348&hm=aa618a030f028e607e0ca2ff5a8aec070c62dd65c294bc2023a8984b15d13b41&=&format=webp&quality=lossless');
+
+            const ivyButton = new ButtonBuilder().setCustomId('buy_ivy').setLabel('🧈 โดเนทให้ ไอวี่ (50 บาท)').setStyle(ButtonStyle.Primary);
+            const ivyRow = new ActionRowBuilder().addComponents(ivyButton);
+            await message.channel.send({ embeds: [ivyEmbed], components: [ivyRow] });
+
             await message.delete();
         }
     },
