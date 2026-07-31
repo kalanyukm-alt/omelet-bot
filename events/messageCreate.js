@@ -296,7 +296,7 @@ module.exports = {
             const morveaRow = new ActionRowBuilder().addComponents(morveaButton);
             await message.channel.send({ embeds: [morveaEmbed], components: [morveaRow] });
 
-            // --- 🧈 24: ไอวี่ (Ivy) (50 บาท) ---
+            // --- 🧈 25: ไอวี่ (Ivy) (50 บาท) ---
             const ivyEmbed = new EmbedBuilder()
                 .setColor('#ffecae')
                 .setTitle('🧈 ตัวละคร: ไอวี่ (Ivy)')
@@ -306,6 +306,17 @@ module.exports = {
             const ivyButton = new ButtonBuilder().setCustomId('buy_ivy').setLabel('🧈 โดเนทให้ ไอวี่ (50 บาท)').setStyle(ButtonStyle.Primary);
             const ivyRow = new ActionRowBuilder().addComponents(ivyButton);
             await message.channel.send({ embeds: [ivyEmbed], components: [ivyRow] });
+
+            // --- 📌 26: ซียา (Siya)  (50 บาท) ---
+            const siyaEmbed = new EmbedBuilder()
+                .setColor('#963844')
+                .setTitle('📌 ตัวละคร: ซียา (Siya)')
+                .setDescription('ได้รับยศพิเศษ <@&1532699925371158558>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1532699665235972208/TA-2026-07-27-08-02-50-1girlbeau-2223524320-0.png?ex=6a6dcd4c&is=6a6c7bcc&hm=5874d8cd1e67be201f2002812849abdfecbf1e2e958c13ef2145c3b84f3761e5&=&format=webp&quality=lossless');
+
+            const siyaButton = new ButtonBuilder().setCustomId('buy_siya').setLabel('📌 โดเนทให้ ซียา (50 บาท)').setStyle(ButtonStyle.Primary);
+            const siyaRow = new ActionRowBuilder().addComponents(siyaButton);
+            await message.channel.send({ embeds: [siyaEmbed], components: [siyaRow] });
 
             await message.delete();
         }
