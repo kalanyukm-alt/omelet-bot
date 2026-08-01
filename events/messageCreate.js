@@ -318,6 +318,17 @@ module.exports = {
             const siyaRow = new ActionRowBuilder().addComponents(siyaButton);
             await message.channel.send({ embeds: [siyaEmbed], components: [siyaRow] });
 
+            // --- 🍥 27: พิม (Pim)  (50 บาท) ---
+            const pimEmbed = new EmbedBuilder()
+                .setColor('#fce0ff')
+                .setTitle('🍽️ ตัวละคร: พิม (Pim)')
+                .setDescription('ได้รับยศพิเศษ <@&1532978616529588355>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1532978965671575754/TA-2026-07-23-03-55-35-1girlbeau-3945280976-1.png?ex=6a6ed16a&is=6a6d7fea&hm=193cd2421788aa8bea5e1623d85818d2bf7d61531a52c15540cbdd8e32389d8a&=&format=webp&quality=lossless');
+
+            const pimButton = new ButtonBuilder().setCustomId('buy_pim').setLabel('🍽️ โดเนทให้ พิม (50 บาท)').setStyle(ButtonStyle.Primary);
+            const pimRow = new ActionRowBuilder().addComponents(pimButton);
+            await message.channel.send({ embeds: [pimEmbed], components: [pimRow] });
+
             await message.delete();
         }
     },
