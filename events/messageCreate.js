@@ -329,6 +329,17 @@ module.exports = {
             const pimRow = new ActionRowBuilder().addComponents(pimButton);
             await message.channel.send({ embeds: [pimEmbed], components: [pimRow] });
 
+            // --- 🍑 28: มิว (Mew)  (50 บาท) ---
+            const mewEmbed = new EmbedBuilder()
+                .setColor('#ff87c3')
+                .setTitle('🍑 ตัวละคร: มิว (Mew)')
+                .setDescription('ได้รับยศพิเศษ <@&1535289114566336543>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1535289729551966278/TA-2026-08-03-21-09-04-1girlbeau-248945797-1.png?ex=6a77397b&is=6a75e7fb&hm=2b8bdd3b14430a633267691244f9155f588744b6c0e0525ea89dd81728484e27&=&format=webp&quality=lossless');
+
+            const mewButton = new ButtonBuilder().setCustomId('buy_mew').setLabel('🍑 โดเนทให้ มิว (50 บาท)').setStyle(ButtonStyle.Primary);
+            const mewRow = new ActionRowBuilder().addComponents(mewButton);
+            await message.channel.send({ embeds: [mewEmbed], components: [mewRow] });
+
             await message.delete();
         }
     },
