@@ -340,6 +340,17 @@ module.exports = {
             const mewRow = new ActionRowBuilder().addComponents(mewButton);
             await message.channel.send({ embeds: [mewEmbed], components: [mewRow] });
 
+            // --- 🖤 29: มุก (Mook)  (50 บาท) ---
+            const mookEmbed = new EmbedBuilder()
+                .setColor('#0a072c')
+                .setTitle('🖤 ตัวละคร: มุก (Mook)')
+                .setDescription('ได้รับยศพิเศษ <@&1535535694271881307>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1535536507069137037/TA-2026-07-30-17-05-31-1girlbeau-1906410969-1.png?ex=6a781f50&is=6a76cdd0&hm=776ce9975554701cb5ca00c8ff4f19ce31948da7cba8071f98d4b7ac64c809dc&=&format=webp&quality=lossless');
+
+            const mookButton = new ButtonBuilder().setCustomId('buy_mook').setLabel('🖤 โดเนทให้ มุก (50 บาท)').setStyle(ButtonStyle.Primary);
+            const mookRow = new ActionRowBuilder().addComponents(mookButton);
+            await message.channel.send({ embeds: [mookEmbed], components: [mookRow] });
+
             await message.delete();
         }
     },
