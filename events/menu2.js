@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
     name: 'messageCreate', // 📌 ใช้ชื่อ event เดิม เพื่อให้บอทรู้ว่าต้องดักจับข้อความ
@@ -7,6 +7,11 @@ module.exports = {
         if (message.author.bot) return;
 
         if (message.content === '!up2') { 
+            if (!message.inGuild() || !message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+                const warning = await message.reply('❌ คำสั่งนี้ใช้ได้เฉพาะแอดมินเซิร์ฟเวอร์ครับ').catch(() => null);
+                if (warning) setTimeout(() => warning.delete().catch(() => {}), 5_000);
+                return;
+            }
             
              // --- 🍧 ก้อนที่ 1: ฟลอเรนเซีย (Florencia) (10 บาท) ---
             const florenciaEmbed = new EmbedBuilder()
@@ -87,7 +92,7 @@ module.exports = {
 
 
 
-            await message.delete();
+            await message.delete().catch(() => {});
         }
     },
 };

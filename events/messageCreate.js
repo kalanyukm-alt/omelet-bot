@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
     name: 'messageCreate',
@@ -20,6 +20,11 @@ module.exports = {
         // ----------------------------------------------------
 
         if (message.content === '!up') {
+            if (!message.inGuild() || !message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+                const warning = await message.reply('❌ คำสั่งนี้ใช้ได้เฉพาะแอดมินเซิร์ฟเวอร์ครับ').catch(() => null);
+                if (warning) setTimeout(() => warning.delete().catch(() => {}), 5_000);
+                return;
+            }
             
             // --- ก้อนที่ 1: ของยูริ (12 บาท) ---
             const yuriEmbed = new EmbedBuilder()
@@ -351,7 +356,7 @@ module.exports = {
             const mookRow = new ActionRowBuilder().addComponents(mookButton);
             await message.channel.send({ embeds: [mookEmbed], components: [mookRow] });
 
-            await message.delete();
+            await message.delete().catch(() => {});
         }
     },
 };

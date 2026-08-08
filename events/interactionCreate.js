@@ -1,5 +1,15 @@
-const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } = require('discord.js');
+const {
+    ActionRowBuilder,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    MessageFlags,
+    PermissionFlagsBits,
+} = require('discord.js');
 const { chromium } = require('playwright'); // 📌 อาวุธทะลวงเกราะของเรา (ห้ามทิ้งเด็ดขาด!)
+const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 
 // ===== CONFIG: ข้อมูลตัวละคร (เพิ่มตัวใหม่แค่มาแก้ตรงนี้) =====
 const ROLE_CONFIG = {
@@ -46,10 +56,249 @@ const MODAL_TO_CONFIG = Object.fromEntries(
     Object.values(ROLE_CONFIG).map(cfg => [cfg.modalId, cfg])
 );
 
+const USER_COOLDOWN_MS = 15_000;
+const MAX_CONCURRENT_PAYMENTS = 2;
+const TRUE_MONEY_REQUEST_TIMEOUT_MS = 15_000;
+const activeUsers = new Set();
+const activeVouchers = new Set();
+const userCooldowns = new Map();
+let activePaymentCount = 0;
+
+function parseTrueMoneyLink(value) {
+    if (typeof value !== 'string' || value.length > 300) return null;
+
+    try {
+        const url = new URL(value.trim());
+        const voucherHash = url.searchParams.get('v');
+        const hasOneVoucherHash = url.searchParams.getAll('v').length === 1;
+
+        if (
+            url.protocol !== 'https:' ||
+            url.hostname !== 'gift.truemoney.com' ||
+            url.pathname !== '/campaign/' ||
+            !hasOneVoucherHash ||
+            !/^[a-zA-Z0-9]{8,128}$/.test(voucherHash ?? '')
+        ) {
+            return null;
+        }
+
+        return voucherHash;
+    } catch {
+        return null;
+    }
+}
+
+function parseBahtToSatang(raw) {
+    if (typeof raw !== 'string' && typeof raw !== 'number') return null;
+    const value = String(raw).trim();
+    if (!/^\d+(?:\.\d{1,2})?$/.test(value)) return null;
+
+    const [bahtPart, satangPart = ''] = value.split('.');
+    const satang = (Number(bahtPart) * 100) + Number(satangPart.padEnd(2, '0'));
+    return Number.isSafeInteger(satang) && satang > 0 ? satang : null;
+}
+
+function formatSatang(satang) {
+    return (satang / 100).toLocaleString('th-TH', {
+        minimumFractionDigits: satang % 100 === 0 ? 0 : 2,
+        maximumFractionDigits: 2,
+    });
+}
+
+function readRecipientCount(data) {
+    const raw = data?.voucher?.member
+        ?? data?.voucher?.member_count
+        ?? data?.voucher?.recipient_count
+        ?? data?.voucher_profile?.member
+        ?? data?.member
+        ?? null;
+
+    if (Array.isArray(raw)) return raw.length;
+    if (typeof raw !== 'string' && typeof raw !== 'number') return null;
+    const count = Number(raw);
+    return Number.isInteger(count) && count > 0 ? count : null;
+}
+
+function inspectVerifiedVoucher(verifyData, requiredSatang) {
+    const verifyCode = verifyData?.status?.code;
+    if (verifyCode !== 'SUCCESS') {
+        return { ok: false, step: 'verify_failed', code: verifyCode ?? 'UNKNOWN' };
+    }
+
+    const data = verifyData?.data;
+    const recipientCount = readRecipientCount(data);
+    if (recipientCount === null) {
+        return { ok: false, step: 'cannot_verify_recipient_count' };
+    }
+    if (recipientCount !== 1) {
+        return { ok: false, step: 'multi_recipient', recipientCount };
+    }
+
+    const rawAmount = data?.voucher?.amount_baht
+        ?? data?.voucher_profile?.amount_baht
+        ?? data?.amount_baht
+        ?? data?.voucher?.amount
+        ?? null;
+    const amountSatang = parseBahtToSatang(rawAmount);
+
+    if (amountSatang === null) {
+        return { ok: false, step: 'cannot_read_amount' };
+    }
+    if (amountSatang < requiredSatang) {
+        return { ok: false, step: 'insufficient', amountSatang };
+    }
+
+    return { ok: true, amountSatang, recipientCount };
+}
+
+function inspectRedeemedVoucher(redeemData, verifiedAmountSatang, requiredSatang) {
+    const code = redeemData?.status?.code ?? 'UNKNOWN';
+    if (code !== 'SUCCESS') {
+        return { ok: false, step: 'redeem_failed', code };
+    }
+
+    const data = redeemData?.data;
+    const rawActualAmount = data?.my_ticket?.amount_baht
+        ?? data?.ticket?.amount_baht
+        ?? data?.redeemed_amount_baht
+        ?? data?.amount_baht
+        ?? data?.voucher?.redeemed_amount_baht
+        ?? null;
+    const parsedActualAmount = rawActualAmount === null ? null : parseBahtToSatang(rawActualAmount);
+    const actualAmountSatang = parsedActualAmount ?? verifiedAmountSatang;
+
+    if (actualAmountSatang < requiredSatang) {
+        return {
+            ok: false,
+            step: 'redeemed_below_minimum',
+            code,
+            amountSatang: actualAmountSatang,
+        };
+    }
+
+    return {
+        ok: true,
+        code,
+        amountSatang: actualAmountSatang,
+        amountSource: parsedActualAmount === null ? 'verified_single_recipient' : 'redeem_response',
+    };
+}
+
+function pruneCooldowns(now) {
+    if (userCooldowns.size < 1_000) return;
+    for (const [userId, startedAt] of userCooldowns) {
+        if (now - startedAt >= USER_COOLDOWN_MS) userCooldowns.delete(userId);
+    }
+}
+
+function acquirePaymentSlot(userId, voucherHash, now = Date.now()) {
+    pruneCooldowns(now);
+    const lastStartedAt = userCooldowns.get(userId);
+
+    if (activeUsers.has(userId)) return { ok: false, reason: 'user_busy' };
+    if (lastStartedAt && now - lastStartedAt < USER_COOLDOWN_MS) {
+        return {
+            ok: false,
+            reason: 'cooldown',
+            retryAfterSeconds: Math.ceil((USER_COOLDOWN_MS - (now - lastStartedAt)) / 1_000),
+        };
+    }
+    if (activeVouchers.has(voucherHash)) return { ok: false, reason: 'voucher_busy' };
+    if (activePaymentCount >= MAX_CONCURRENT_PAYMENTS) return { ok: false, reason: 'system_busy' };
+
+    userCooldowns.set(userId, now);
+    activeUsers.add(userId);
+    activeVouchers.add(voucherHash);
+    activePaymentCount += 1;
+    return { ok: true };
+}
+
+function releasePaymentSlot(userId, voucherHash) {
+    activeUsers.delete(userId);
+    activeVouchers.delete(voucherHash);
+    activePaymentCount = Math.max(0, activePaymentCount - 1);
+}
+
+async function getFulfillmentTarget(interaction, config) {
+    if (!interaction.inGuild() || !interaction.guild) {
+        return { ok: false, message: '❌ ระบบรับซองได้เฉพาะในเซิร์ฟเวอร์ Discord เท่านั้นครับ' };
+    }
+
+    const [member, role, botMember] = await Promise.all([
+        interaction.guild.members.fetch(interaction.user.id),
+        interaction.guild.roles.fetch(config.roleId),
+        interaction.guild.members.fetchMe(),
+    ]);
+
+    if (!role) {
+        return { ok: false, message: '❌ ยังไม่พบยศนี้ในเซิร์ฟเวอร์ ระบบยังไม่ได้รับเงิน กรุณาแจ้งแอดมินครับ' };
+    }
+    if (
+        role.managed ||
+        !botMember.permissions.has(PermissionFlagsBits.ManageRoles) ||
+        botMember.roles.highest.comparePositionTo(role) <= 0
+    ) {
+        return { ok: false, message: '❌ บอทยังไม่สามารถมอบยศนี้ได้ ระบบยังไม่ได้รับเงิน กรุณาแจ้งแอดมินให้ตรวจสิทธิ์และลำดับยศครับ' };
+    }
+
+    return { ok: true, member, role };
+}
+
+async function sendLog(client, content) {
+    try {
+        const channelId = process.env.LOG_CHANNEL;
+        if (!channelId) return;
+        const channel = client.channels.cache.get(channelId) ?? await client.channels.fetch(channelId);
+        if (channel?.isTextBased()) {
+            await channel.send({ content, allowedMentions: { parse: [] } });
+        }
+    } catch (error) {
+        console.error('[WARN] ส่ง transaction log ไป Discord ไม่สำเร็จ:', error.message);
+    }
+}
+
+async function writeTransactionAudit(record) {
+    const auditDirectory = path.join(__dirname, '..', 'data');
+    const auditPath = path.join(auditDirectory, 'transactions.jsonl');
+    await fs.mkdir(auditDirectory, { recursive: true });
+    await fs.appendFile(auditPath, `${JSON.stringify({ at: new Date().toISOString(), ...record })}\n`, 'utf8');
+}
+
+async function recordTransactionAudit(record) {
+    try {
+        await writeTransactionAudit(record);
+    } catch (error) {
+        console.error('[WARN] เขียน transaction audit ลงไฟล์ไม่สำเร็จ:', error.message);
+    }
+}
+
+function voucherFingerprint(voucherHash) {
+    return crypto.createHash('sha256').update(voucherHash).digest('hex');
+}
+
+async function fetchJsonInsidePage(page, url, options = {}) {
+    return page.evaluate(async ({ requestUrl, requestOptions, timeoutMs }) => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(requestUrl, { ...requestOptions, signal: controller.signal });
+            const text = await response.text();
+            let body;
+            try {
+                body = JSON.parse(text);
+            } catch {
+                return { httpOk: false, httpStatus: response.status, invalidJson: true, body: null };
+            }
+            return { httpOk: response.ok, httpStatus: response.status, invalidJson: false, body };
+        } finally {
+            clearTimeout(timeout);
+        }
+    }, { requestUrl: url, requestOptions: options, timeoutMs: TRUE_MONEY_REQUEST_TIMEOUT_MS });
+}
+
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction) {
-
         // ─── กดปุ่ม → เปิด Modal ───
         if (interaction.isButton()) {
             const config = ROLE_CONFIG[interaction.customId];
@@ -64,6 +313,7 @@ module.exports = {
                 .setLabel('วางลิงก์ซองอั่งเปา TrueMoney ที่นี่')
                 .setStyle(TextInputStyle.Short)
                 .setPlaceholder('https://gift.truemoney.com/campaign/?v=...')
+                .setMaxLength(300)
                 .setRequired(true);
 
             modal.addComponents(new ActionRowBuilder().addComponents(linkInput));
@@ -71,118 +321,215 @@ module.exports = {
         }
 
         // ─── กรอก Modal → ประมวลผล ───
-        if (interaction.isModalSubmit()) {
-            // 💡 อัปเดตใหม่ล่าสุด: ใช้ MessageFlags.Ephemeral แทนแบบเก่า เพื่อลบคำเตือนสีเหลือง
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        if (!interaction.isModalSubmit()) return;
+        const config = MODAL_TO_CONFIG[interaction.customId];
+        if (!config) return;
 
-            const config = MODAL_TO_CONFIG[interaction.customId];
-            if (!config) return;
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            const logChannel = interaction.client.channels.cache.get(process.env.LOG_CHANNEL);
-            const phoneNumber = process.env.PHONE_NUMBER;
-            const twLink = interaction.fields.getTextInputValue('truemoney_link');
-
-            const match = twLink.match(/https:\/\/gift\.truemoney\.com\/campaign\/\?v=([a-zA-Z0-9]+)/);
-            if (!match) {
-                return await interaction.editReply('❌ ลิงก์ไม่ถูกต้องครับ กรุณาใช้ลิงก์ซองอั่งเปา TrueMoney เท่านั้น');
-            }
-
-            const voucherHash = match[1];
-            let browser;
-
-            try {
-                // 🛡️ เปิดเกราะ Playwright บุกเข้าระบบ
-                browser = await chromium.launch({ headless: true });
-                const context = await browser.newContext({
-                    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
-                });
-                const page = await context.newPage();
-                await page.goto(`https://gift.truemoney.com/campaign/?v=${voucherHash}`, { waitUntil: 'networkidle' });
-
-                // 🎭 สั่งให้บอททำงาน "ข้างใน" เบราว์เซอร์ (เพื่อหลบ Cloudflare)
-                const result = await page.evaluate(async ({ hash, phone, configAmount }) => {
-                    
-                    // 1. ตรวจซอง
-                    const verifyRes = await fetch(`https://gift.truemoney.com/campaign/vouchers/${hash}/verify?mobile=${phone}`);
-                    const verifyData = await verifyRes.json();
-                    const verifyCode = verifyData?.status?.code;
-
-                    if (verifyCode !== 'SUCCESS') {
-                        return { step: 'verify_failed', code: verifyCode };
-                    }
-
-                    // 2. ดึงยอดเงิน (ใช้ตรรกะสุดฉลาดของ Claude)
-                    const d = verifyData?.data;
-                    const raw = d?.voucher?.amount_baht ?? d?.voucher_profile?.amount_baht ?? d?.amount_baht ?? d?.voucher?.amount ?? null;
-                    const voucherAmount = raw ? parseFloat(raw) : null;
-
-                    if (voucherAmount === null) return { step: 'cannot_read_amount', data: verifyData?.data };
-                    
-                    // 3. ตรวจเงินว่าพอไหมก่อนดึง
-                    if (voucherAmount < configAmount) return { step: 'insufficient', amount: voucherAmount };
-
-                    // 4. ดึงเงิน
-                    const redeemRes = await fetch(`https://gift.truemoney.com/campaign/vouchers/${hash}/redeem`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ mobile: phone, voucher_hash: hash })
-                    });
-                    const redeemData = await redeemRes.json();
-
-                    return { step: 'redeemed', amount: voucherAmount, code: redeemData?.status?.code };
-
-                }, { hash: voucherHash, phone: phoneNumber, configAmount: config.amount });
-
-                await browser.close();
-
-                // ─── จัดการผลลัพธ์ที่ได้กลับมา ───
-                if (result.step === 'verify_failed') {
-                    const messages = {
-                        VOUCHER_OUT_OF_STOCK: '❌ ซองอั่งเปานี้ถูกรับไปแล้ว หรือไม่มีเงินเหลืออยู่ครับ',
-                        VOUCHER_EXPIRED:      '❌ ซองอั่งเปานี้หมดอายุแล้วครับ',
-                    };
-                    const errorMsg = messages[result.code] ?? `❌ ไม่สามารถตรวจสอบซองได้ (รหัส: ${result.code})`;
-                    await interaction.editReply(errorMsg);
-                    logChannel?.send(`🔴 **[ตรวจซองล้มเหลว]** \`${interaction.user.tag}\` → ${result.code}`);
-                } 
-                else if (result.step === 'cannot_read_amount') {
-                    await interaction.editReply('❌ ไม่สามารถอ่านยอดเงินจากซองได้ครับ กรุณาติดต่อแอดมิน');
-                    logChannel?.send(`🔴 **[อ่านยอดเงินไม่ได้]** \`${interaction.user.tag}\``);
-                }
-                else if (result.step === 'insufficient') {
-                    await interaction.editReply(
-                        `❌ **ยอดเงินไม่พอครับ!**\n` +
-                        `ซองนี้มีเงิน **${result.amount} บาท** (ขั้นต่ำสำหรับ ${config.roleName} คือ ${config.amount} บาท)\n` +
-                        `*บอทยังไม่ได้ดึงเงินของคุณไป ลิงก์ซองนี้ยังใช้งานได้ปกติครับ*`
-                    );
-                    logChannel?.send(`🟡 **[เงินไม่พอ]** \`${interaction.user.tag}\` ส่ง **${result.amount} บาท** (ต้องการ ${config.amount} บาท สำหรับยศ ${config.roleName})`);
-                }
-                else if (result.step === 'redeemed') {
-                    if (result.code !== 'SUCCESS') {
-                        let errorMsg = `❌ ดึงเงินไม่สำเร็จ (รหัส: ${result.code})`;
-                        if (result.code === 'CANNOT_GET_OWN_VOUCHER') errorMsg = '✅ ตรวจสอบซองสำเร็จ แต่รับไม่ได้เพราะเป็นซองของคุณเองครับ';
-                        await interaction.editReply(errorMsg);
-                        logChannel?.send(`🔴 **[ดึงเงินล้มเหลว]** \`${interaction.user.tag}\` → ${result.code}`);
-                        return;
-                    }
-
-                    // ให้ยศ (แยก error ตามที่ Claude แนะนำ)
-                    try {
-                        await interaction.member.roles.add(config.roleId);
-                        await interaction.editReply(`✅ รับเงินสำเร็จ **${result.amount} บาท**!\n🎉 ระบบมอบยศ **${config.roleName}** ให้คุณเรียบร้อยแล้ว ขอบคุณที่สนับสนุนครับ!`);
-                        logChannel?.send(`🟢 **[โดเนทสำเร็จ]** \`${interaction.user.tag}\` โดเนท **${result.amount} บาท** → ได้รับยศ **${config.roleName}**`);
-                    } catch (roleError) {
-                        await interaction.editReply(`✅ รับเงินสำเร็จ **${result.amount} บาท** แล้วครับ!\n❗ แต่ระบบให้ยศไม่ได้ กรุณาติดต่อแอดมินเพื่อรับยศ **${config.roleName}** ด้วยตนเองครับ`);
-                        logChannel?.send(`🔴 **[ให้ยศล้มเหลว — แอดมินตรวจสอบด่วน!]**\n👤 User: \`${interaction.user.tag}\`\n💰 ดึงเงิน: **${result.amount} บาท**\n⚠️ Error: \`${roleError.message}\``);
-                    }
-                }
-
-            } catch (error) {
-                if (browser) await browser.close();
-                console.error('[ERROR] interactionCreate:', error);
-                await interaction.editReply('❌ เกิดข้อผิดพลาดร้ายแรงครับ บอทไม่สามารถเข้าถึงระบบได้');
-                logChannel?.send(`🔴 **[System Error]** \`${interaction.user.tag}\` → \`${error.message}\``);
-            }
+        const phoneNumber = process.env.PHONE_NUMBER;
+        if (!/^0\d{9}$/.test(phoneNumber ?? '')) {
+            await interaction.editReply('❌ ระบบรับเงินยังตั้งค่าไม่ครบ ระบบยังไม่ได้รับเงิน กรุณาแจ้งแอดมินครับ');
+            await sendLog(interaction.client, `🔴 **[Config Error]** PHONE_NUMBER ไม่ถูกต้อง`);
+            return;
         }
+
+        const voucherHash = parseTrueMoneyLink(interaction.fields.getTextInputValue('truemoney_link'));
+        if (!voucherHash) {
+            await interaction.editReply('❌ ลิงก์ไม่ถูกต้องครับ กรุณาใช้ลิงก์ซองอั่งเปา TrueMoney เท่านั้น');
+            return;
+        }
+
+        const slot = acquirePaymentSlot(interaction.user.id, voucherHash);
+        if (!slot.ok) {
+            const messages = {
+                user_busy: '⏳ ระบบกำลังตรวจซองก่อนหน้าของคุณอยู่ กรุณารอให้เสร็จก่อนครับ',
+                voucher_busy: '⏳ ซองนี้กำลังถูกตรวจสอบอยู่ กรุณารอสักครู่ครับ',
+                system_busy: '⏳ มีผู้ใช้กำลังรับซองอยู่ กรุณาลองใหม่อีกครั้งในไม่ช้าครับ',
+                cooldown: `⏳ กรุณารออีกประมาณ **${slot.retryAfterSeconds} วินาที** แล้วลองใหม่ครับ`,
+            };
+            await interaction.editReply(messages[slot.reason]);
+            return;
+        }
+
+        const fingerprint = voucherFingerprint(voucherHash);
+        const requiredSatang = config.amount * 100;
+        const auditBase = {
+            voucherFingerprint: fingerprint,
+            discordUserId: interaction.user.id,
+            discordTag: interaction.user.tag,
+            guildId: interaction.guildId,
+            roleId: config.roleId,
+            roleName: config.roleName,
+        };
+        let browser;
+        let paymentPhase = 'before_redeem';
+
+        try {
+            // ตรวจว่ามอบยศได้จริงก่อนเริ่มตรวจและรับเงิน
+            const fulfillment = await getFulfillmentTarget(interaction, config);
+            if (!fulfillment.ok) {
+                await interaction.editReply(fulfillment.message);
+                return;
+            }
+
+            browser = await chromium.launch({ headless: true, timeout: TRUE_MONEY_REQUEST_TIMEOUT_MS });
+            const context = await browser.newContext({
+                userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+            });
+            const page = await context.newPage();
+            page.setDefaultTimeout(TRUE_MONEY_REQUEST_TIMEOUT_MS);
+            page.setDefaultNavigationTimeout(TRUE_MONEY_REQUEST_TIMEOUT_MS);
+            await page.goto(`https://gift.truemoney.com/campaign/?v=${voucherHash}`, {
+                waitUntil: 'networkidle',
+                timeout: TRUE_MONEY_REQUEST_TIMEOUT_MS,
+            });
+
+            const verifyResponse = await fetchJsonInsidePage(
+                page,
+                `https://gift.truemoney.com/campaign/vouchers/${voucherHash}/verify?mobile=${encodeURIComponent(phoneNumber)}`,
+            );
+            if (!verifyResponse.body) {
+                throw new Error(`TrueMoney verify response ไม่ถูกต้อง (HTTP ${verifyResponse.httpStatus})`);
+            }
+
+            const verified = inspectVerifiedVoucher(verifyResponse.body, requiredSatang);
+            if (!verified.ok) {
+                const verifyMessages = {
+                    VOUCHER_OUT_OF_STOCK: '❌ ซองอั่งเปานี้ถูกรับไปแล้ว หรือไม่มีเงินเหลืออยู่ครับ',
+                    VOUCHER_EXPIRED: '❌ ซองอั่งเปานี้หมดอายุแล้วครับ',
+                };
+
+                if (verified.step === 'verify_failed') {
+                    await interaction.editReply(verifyMessages[verified.code] ?? `❌ ไม่สามารถตรวจสอบซองได้ (รหัส: ${verified.code})`);
+                } else if (verified.step === 'multi_recipient') {
+                    await interaction.editReply('❌ ระบบรับเฉพาะซองแบบ **ส่งให้คนเดียว** เท่านั้นครับ\n*บอทยังไม่ได้ดึงเงิน กรุณาสร้างซองใหม่แบบคนเดียวครับ*');
+                } else if (verified.step === 'cannot_verify_recipient_count') {
+                    await interaction.editReply('❌ ระบบไม่สามารถยืนยันได้ว่าเป็นซองคนเดียว จึงยังไม่ได้รับเงิน กรุณาแจ้งแอดมินครับ');
+                } else if (verified.step === 'cannot_read_amount') {
+                    await interaction.editReply('❌ ไม่สามารถอ่านยอดเงินจากซองได้ ระบบยังไม่ได้รับเงิน กรุณาแจ้งแอดมินครับ');
+                } else if (verified.step === 'insufficient') {
+                    const amount = formatSatang(verified.amountSatang);
+                    await interaction.editReply(`❌ **ยอดเงินไม่พอครับ!**\nซองนี้มีเงิน **${amount} บาท** (ขั้นต่ำสำหรับ ${config.roleName} คือ ${config.amount} บาท)\n*บอทยังไม่ได้ดึงเงิน ลิงก์ซองนี้ยังใช้งานได้ปกติครับ*`);
+                }
+
+                await sendLog(interaction.client, `🟡 **[ไม่ได้รับเงิน]** User ID: \`${interaction.user.id}\` → ${verified.step}${verified.code ? ` (${verified.code})` : ''}`);
+                return;
+            }
+
+            paymentPhase = 'redeem_started';
+            await recordTransactionAudit({
+                ...auditBase,
+                status: 'redeem_started',
+                verifiedAmountSatang: verified.amountSatang,
+            });
+
+            const redeemResponse = await fetchJsonInsidePage(
+                page,
+                `https://gift.truemoney.com/campaign/vouchers/${voucherHash}/redeem`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: phoneNumber, voucher_hash: voucherHash }),
+                },
+            );
+            if (!redeemResponse.body) {
+                throw new Error(`TrueMoney redeem response ไม่ถูกต้อง (HTTP ${redeemResponse.httpStatus})`);
+            }
+
+            const redeemed = inspectRedeemedVoucher(redeemResponse.body, verified.amountSatang, requiredSatang);
+            if (!redeemed.ok) {
+                if (redeemed.step === 'redeemed_below_minimum') {
+                    paymentPhase = 'redeemed_amount_mismatch';
+                    const amount = formatSatang(redeemed.amountSatang);
+                    await recordTransactionAudit({ ...auditBase, status: paymentPhase, actualAmountSatang: redeemed.amountSatang });
+                    await interaction.editReply(`⚠️ ระบบรับเงินได้ **${amount} บาท** ซึ่งต่ำกว่าราคา กรุณาติดต่อแอดมินพร้อม User ID **${interaction.user.id}** ครับ`);
+                    await sendLog(interaction.client, `🔴 **[CRITICAL: ยอดรับจริงไม่ตรง]** User ID: \`${interaction.user.id}\` รับ ${amount} บาท ต้องการ ${config.amount} บาท`);
+                    return;
+                }
+
+                paymentPhase = 'redeem_failed';
+                let errorMessage = `❌ ดึงเงินไม่สำเร็จ (รหัส: ${redeemed.code})`;
+                if (redeemed.code === 'CANNOT_GET_OWN_VOUCHER') {
+                    errorMessage = '❌ รับไม่ได้เพราะเป็นซองที่สร้างจาก Wallet ของผู้รับเองครับ';
+                }
+                await recordTransactionAudit({ ...auditBase, status: paymentPhase, redeemCode: redeemed.code });
+                await interaction.editReply(errorMessage);
+                await sendLog(interaction.client, `🔴 **[ดึงเงินล้มเหลว]** User ID: \`${interaction.user.id}\` → ${redeemed.code}`);
+                return;
+            }
+
+            paymentPhase = 'redeemed';
+            await recordTransactionAudit({
+                ...auditBase,
+                status: paymentPhase,
+                actualAmountSatang: redeemed.amountSatang,
+                amountSource: redeemed.amountSource,
+            });
+
+            const amount = formatSatang(redeemed.amountSatang);
+            try {
+                await fulfillment.member.roles.add(fulfillment.role, `TrueMoney donation ${amount} baht`);
+            } catch (roleError) {
+                paymentPhase = 'role_failed';
+                await recordTransactionAudit({
+                    ...auditBase,
+                    status: paymentPhase,
+                    actualAmountSatang: redeemed.amountSatang,
+                    error: roleError.message,
+                });
+                await interaction.editReply(`✅ รับเงินสำเร็จ **${amount} บาท** แล้วครับ!\n❗ แต่ระบบให้ยศไม่ได้ กรุณาติดต่อแอดมินพร้อม User ID **${interaction.user.id}** เพื่อรับยศ **${config.roleName}** ครับ`);
+                await sendLog(interaction.client, `🔴 **[ให้ยศล้มเหลว — ตรวจสอบด่วน]**\nUser ID: \`${interaction.user.id}\`\nยอด: **${amount} บาท**\nยศ: **${config.roleName}**\nError: \`${roleError.message}\``);
+                return;
+            }
+
+            paymentPhase = 'role_granted';
+            await recordTransactionAudit({
+                ...auditBase,
+                status: paymentPhase,
+                actualAmountSatang: redeemed.amountSatang,
+            });
+            await interaction.editReply(`✅ รับเงินสำเร็จ **${amount} บาท**!\n🎉 ระบบมอบยศ **${config.roleName}** ให้คุณเรียบร้อยแล้ว ขอบคุณที่สนับสนุนครับ!`);
+            await sendLog(interaction.client, `🟢 **[โดเนทสำเร็จ]** User ID: \`${interaction.user.id}\` โดเนท **${amount} บาท** → ได้รับยศ **${config.roleName}**`);
+        } catch (error) {
+            console.error('[ERROR] interactionCreate:', error);
+            const isAmbiguousPayment = paymentPhase === 'redeem_started';
+            const moneyWasRedeemed = ['redeemed', 'redeemed_amount_mismatch', 'role_failed', 'role_granted'].includes(paymentPhase);
+            const auditStatus = isAmbiguousPayment
+                ? 'redeem_unknown'
+                : moneyWasRedeemed
+                    ? 'post_redeem_error'
+                    : 'system_error';
+            await recordTransactionAudit({ ...auditBase, status: auditStatus, paymentPhase, error: error.message });
+
+            if (isAmbiguousPayment) {
+                await interaction.editReply('⚠️ ระบบขาดการติดต่อระหว่างรับซอง ห้ามส่งซองเดิมซ้ำ กรุณาติดต่อแอดมินพร้อม User ID **' + interaction.user.id + '** ครับ').catch(() => {});
+                await sendLog(interaction.client, `🔴 **[CRITICAL: สถานะรับเงินไม่ชัดเจน]** User ID: \`${interaction.user.id}\` Error: \`${error.message}\``);
+            } else if (moneyWasRedeemed) {
+                await interaction.editReply('⚠️ ระบบรับเงินแล้วแต่เกิดข้อผิดพลาดภายหลัง กรุณาติดต่อแอดมินพร้อม User ID **' + interaction.user.id + '** ครับ').catch(() => {});
+                await sendLog(interaction.client, `🔴 **[Post-redeem Error]** User ID: \`${interaction.user.id}\` Phase: \`${paymentPhase}\` Error: \`${error.message}\``);
+            } else {
+                await interaction.editReply('❌ เกิดข้อผิดพลาดระหว่างตรวจซอง ระบบยังไม่ได้รับเงิน กรุณาลองใหม่ครับ').catch(() => {});
+                await sendLog(interaction.client, `🔴 **[System Error — ยังไม่ได้รับเงิน]** User ID: \`${interaction.user.id}\` Error: \`${error.message}\``);
+            }
+        } finally {
+            if (browser) await browser.close().catch(() => {});
+            releasePaymentSlot(interaction.user.id, voucherHash);
+        }
+    },
+    _internals: {
+        parseTrueMoneyLink,
+        parseBahtToSatang,
+        readRecipientCount,
+        inspectVerifiedVoucher,
+        inspectRedeemedVoucher,
+        acquirePaymentSlot,
+        releasePaymentSlot,
+        resetPaymentStateForTests() {
+            activeUsers.clear();
+            activeVouchers.clear();
+            userCooldowns.clear();
+            activePaymentCount = 0;
+        },
     },
 };
