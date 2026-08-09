@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node test/paymentSafety.test.js"
+    "test": "node --test --experimental-test-isolation=none"
   },
   "keywords": [],
   "author": "",

@@ -1,5 +1,7 @@
 const {
     ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle,
@@ -8,8 +10,12 @@ const {
 } = require('discord.js');
 const { chromium } = require('playwright'); // 📌 อาวุธทะลวงเกราะของเรา (ห้ามทิ้งเด็ดขาด!)
 const crypto = require('node:crypto');
-const fs = require('node:fs/promises');
-const path = require('node:path');
+const {
+    createPromptPayCheckoutSession,
+    StripeConfigError,
+} = require('../services/stripePayments');
+const { recordTransactionAudit } = require('../services/transactionAudit');
+const { sendLog } = require('../services/discordLog');
 
 // ===== CONFIG: ข้อมูลตัวละคร (เพิ่มตัวใหม่แค่มาแก้ตรงนี้) =====
 const ROLE_CONFIG = {
@@ -59,9 +65,14 @@ const MODAL_TO_CONFIG = Object.fromEntries(
 const USER_COOLDOWN_MS = 15_000;
 const MAX_CONCURRENT_PAYMENTS = 2;
 const TRUE_MONEY_REQUEST_TIMEOUT_MS = 15_000;
+const STRIPE_CHECKOUT_COOLDOWN_MS = 15_000;
+const STRIPE_MODAL_PREFIX = 'stripe_amount:';
+const TRUE_MONEY_BUTTON_PREFIX = 'pay_truemoney:';
+const STRIPE_BUTTON_PREFIX = 'pay_stripe:';
 const activeUsers = new Set();
 const activeVouchers = new Set();
 const userCooldowns = new Map();
+const stripeCheckoutCooldowns = new Map();
 let activePaymentCount = 0;
 
 function parseTrueMoneyLink(value) {
@@ -244,34 +255,6 @@ async function getFulfillmentTarget(interaction, config) {
     return { ok: true, member, role };
 }
 
-async function sendLog(client, content) {
-    try {
-        const channelId = process.env.LOG_CHANNEL;
-        if (!channelId) return;
-        const channel = client.channels.cache.get(channelId) ?? await client.channels.fetch(channelId);
-        if (channel?.isTextBased()) {
-            await channel.send({ content, allowedMentions: { parse: [] } });
-        }
-    } catch (error) {
-        console.error('[WARN] ส่ง transaction log ไป Discord ไม่สำเร็จ:', error.message);
-    }
-}
-
-async function writeTransactionAudit(record) {
-    const auditDirectory = path.join(__dirname, '..', 'data');
-    const auditPath = path.join(auditDirectory, 'transactions.jsonl');
-    await fs.mkdir(auditDirectory, { recursive: true });
-    await fs.appendFile(auditPath, `${JSON.stringify({ at: new Date().toISOString(), ...record })}\n`, 'utf8');
-}
-
-async function recordTransactionAudit(record) {
-    try {
-        await writeTransactionAudit(record);
-    } catch (error) {
-        console.error('[WARN] เขียน transaction audit ลงไฟล์ไม่สำเร็จ:', error.message);
-    }
-}
-
 function voucherFingerprint(voucherHash) {
     return crypto.createHash('sha256').update(voucherHash).digest('hex');
 }
@@ -296,32 +279,174 @@ async function fetchJsonInsidePage(page, url, options = {}) {
     }, { requestUrl: url, requestOptions: options, timeoutMs: TRUE_MONEY_REQUEST_TIMEOUT_MS });
 }
 
+function buildTrueMoneyModal(config) {
+    const modal = new ModalBuilder()
+        .setCustomId(config.modalId)
+        .setTitle(config.title);
+
+    const linkInput = new TextInputBuilder()
+        .setCustomId('truemoney_link')
+        .setLabel('วางลิงก์ซองอั่งเปา TrueMoney ที่นี่')
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder('https://gift.truemoney.com/campaign/?v=...')
+        .setMaxLength(300)
+        .setRequired(true);
+
+    modal.addComponents(new ActionRowBuilder().addComponents(linkInput));
+    return modal;
+}
+
+function buildStripeAmountModal(configKey, config) {
+    const modal = new ModalBuilder()
+        .setCustomId(`${STRIPE_MODAL_PREFIX}${configKey}`)
+        .setTitle(`PromptPay: ${config.roleName}`.slice(0, 45));
+
+    const amountInput = new TextInputBuilder()
+        .setCustomId('stripe_amount_baht')
+        .setLabel(`จำนวนเงิน (ขั้นต่ำ ${config.amount} บาท)`.slice(0, 45))
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder(`เช่น ${config.amount}, ${config.amount + 10}, 100`)
+        .setValue(String(config.amount))
+        .setMinLength(1)
+        .setMaxLength(10)
+        .setRequired(true);
+
+    modal.addComponents(new ActionRowBuilder().addComponents(amountInput));
+    return modal;
+}
+
+function getStripeCheckoutCooldown(userId, now = Date.now()) {
+    const previous = stripeCheckoutCooldowns.get(userId);
+    if (previous && now - previous < STRIPE_CHECKOUT_COOLDOWN_MS) {
+        return Math.ceil((STRIPE_CHECKOUT_COOLDOWN_MS - (now - previous)) / 1_000);
+    }
+    stripeCheckoutCooldowns.set(userId, now);
+    return 0;
+}
+
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction) {
-        // ─── กดปุ่ม → เปิด Modal ───
+        // ─── กดปุ่มตัวละคร → เลือก TrueMoney หรือ Stripe PromptPay ───
         if (interaction.isButton()) {
-            const config = ROLE_CONFIG[interaction.customId];
-            if (!config) return;
+            const directConfig = ROLE_CONFIG[interaction.customId];
+            if (directConfig) {
+                const methodRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`${TRUE_MONEY_BUTTON_PREFIX}${interaction.customId}`)
+                        .setLabel('ซองอั่งเปา TrueMoney')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId(`${STRIPE_BUTTON_PREFIX}${interaction.customId}`)
+                        .setLabel('PromptPay QR (Stripe)')
+                        .setStyle(ButtonStyle.Primary),
+                );
 
-            const modal = new ModalBuilder()
-                .setCustomId(config.modalId)
-                .setTitle(config.title);
+                return await interaction.reply({
+                    content: `เลือกวิธีชำระสำหรับ **${directConfig.roleName}**\nขั้นต่ำ **${directConfig.amount} บาท** — จ่ายมากกว่าได้ครับ`,
+                    components: [methodRow],
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
 
-            const linkInput = new TextInputBuilder()
-                .setCustomId('truemoney_link')
-                .setLabel('วางลิงก์ซองอั่งเปา TrueMoney ที่นี่')
-                .setStyle(TextInputStyle.Short)
-                .setPlaceholder('https://gift.truemoney.com/campaign/?v=...')
-                .setMaxLength(300)
-                .setRequired(true);
+            if (interaction.customId.startsWith(TRUE_MONEY_BUTTON_PREFIX)) {
+                const configKey = interaction.customId.slice(TRUE_MONEY_BUTTON_PREFIX.length);
+                const config = ROLE_CONFIG[configKey];
+                if (!config) return;
+                return await interaction.showModal(buildTrueMoneyModal(config));
+            }
 
-            modal.addComponents(new ActionRowBuilder().addComponents(linkInput));
-            return await interaction.showModal(modal);
+            if (interaction.customId.startsWith(STRIPE_BUTTON_PREFIX)) {
+                const configKey = interaction.customId.slice(STRIPE_BUTTON_PREFIX.length);
+                const config = ROLE_CONFIG[configKey];
+                if (!config) return;
+                return await interaction.showModal(buildStripeAmountModal(configKey, config));
+            }
+
+            return;
         }
 
         // ─── กรอก Modal → ประมวลผล ───
         if (!interaction.isModalSubmit()) return;
+
+        if (interaction.customId.startsWith(STRIPE_MODAL_PREFIX)) {
+            const configKey = interaction.customId.slice(STRIPE_MODAL_PREFIX.length);
+            const config = ROLE_CONFIG[configKey];
+            if (!config) return;
+
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+            const amountSatang = parseBahtToSatang(interaction.fields.getTextInputValue('stripe_amount_baht'));
+            if (amountSatang === null) {
+                await interaction.editReply('❌ จำนวนเงินไม่ถูกต้อง กรุณาใส่เป็นตัวเลข เช่น 20 หรือ 20.50 ครับ');
+                return;
+            }
+            if (amountSatang < config.amount * 100) {
+                await interaction.editReply(`❌ ยอดขั้นต่ำสำหรับ **${config.roleName}** คือ **${config.amount} บาท** ครับ`);
+                return;
+            }
+            if (!interaction.inGuild() || !interaction.guildId) {
+                await interaction.editReply('❌ การชำระเงินต้องเริ่มจากในเซิร์ฟเวอร์ Discord เท่านั้นครับ');
+                return;
+            }
+
+            const retryAfterSeconds = getStripeCheckoutCooldown(interaction.user.id);
+            if (retryAfterSeconds > 0) {
+                await interaction.editReply(`⏳ กรุณารออีกประมาณ **${retryAfterSeconds} วินาที** แล้วสร้าง QR ใหม่ครับ`);
+                return;
+            }
+
+            try {
+                const fulfillment = await getFulfillmentTarget(interaction, config);
+                if (!fulfillment.ok) {
+                    await interaction.editReply(fulfillment.message);
+                    return;
+                }
+                if (fulfillment.member.roles.cache.has(config.roleId)) {
+                    await interaction.editReply(`ℹ️ คุณมียศ **${config.roleName}** อยู่แล้ว จึงไม่ต้องชำระเงินซ้ำครับ`);
+                    return;
+                }
+
+                const checkout = await createPromptPayCheckoutSession({
+                    amountSatang,
+                    configKey,
+                    roleConfig: config,
+                    discordUserId: interaction.user.id,
+                    guildId: interaction.guildId,
+                });
+                const payRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel(`เปิด QR PromptPay — ${formatSatang(amountSatang)} บาท`)
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(checkout.url),
+                );
+
+                await interaction.editReply({
+                    content: `✅ สร้างหน้าชำระเงินสำหรับ **${config.roleName}** แล้ว\nยอด **${formatSatang(amountSatang)} บาท** ลิงก์หมดอายุประมาณ 30 นาที\nระบบจะให้ยศอัตโนมัติหลัง Stripe ยืนยันว่าได้รับเงินจริงครับ`,
+                    components: [payRow],
+                });
+                await sendLog(interaction.client, `🔵 **[สร้าง Stripe Checkout]** User ID: \`${interaction.user.id}\` ยอด **${formatSatang(amountSatang)} บาท** → **${config.roleName}** (${checkout.livemode ? 'LIVE' : 'TEST'})`);
+            } catch (error) {
+                console.error('[STRIPE] create checkout error:', error);
+                await recordTransactionAudit({
+                    provider: 'stripe',
+                    status: 'checkout_create_failed',
+                    discordUserId: interaction.user.id,
+                    guildId: interaction.guildId,
+                    roleId: config.roleId,
+                    amountSatang,
+                    error: error.message,
+                });
+
+                const message = error instanceof StripeConfigError
+                    ? '❌ ระบบ PromptPay ยังตั้งค่าไม่ครบ กรุณาแจ้งแอดมินครับ'
+                    : '❌ สร้างหน้า PromptPay ไม่สำเร็จ ระบบยังไม่ได้รับเงิน กรุณาลองใหม่ภายหลังครับ';
+                await interaction.editReply(message);
+                await sendLog(interaction.client, `🔴 **[Stripe Checkout Error — ยังไม่ได้รับเงิน]** \`${error.message}\``);
+            }
+            return;
+        }
+
         const config = MODAL_TO_CONFIG[interaction.customId];
         if (!config) return;
 
@@ -518,6 +643,7 @@ module.exports = {
         }
     },
     _internals: {
+        ROLE_CONFIG,
         parseTrueMoneyLink,
         parseBahtToSatang,
         readRecipientCount,
@@ -529,6 +655,7 @@ module.exports = {
             activeUsers.clear();
             activeVouchers.clear();
             userCooldowns.clear();
+            stripeCheckoutCooldowns.clear();
             activePaymentCount = 0;
         },
     },

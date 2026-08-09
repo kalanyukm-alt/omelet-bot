@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+const interactionCreateEvent = require('../events/interactionCreate');
 const {
     parseTrueMoneyLink,
     parseBahtToSatang,
@@ -9,7 +10,7 @@ const {
     acquirePaymentSlot,
     releasePaymentSlot,
     resetPaymentStateForTests,
-} = require('../events/interactionCreate')._internals;
+} = interactionCreateEvent._internals;
 
 function verifyResponse({ amount = '20.00', member = 1, code = 'SUCCESS' } = {}) {
     return {
@@ -116,4 +117,31 @@ test('จำกัดการตรวจซองพร้อมกันท�
     assert.equal(acquirePaymentSlot('user-3', 'voucher-3', now).reason, 'system_busy');
     releasePaymentSlot('user-1', 'voucher-1');
     releasePaymentSlot('user-2', 'voucher-2');
+});
+
+test('ปุ่มตัวละครยังแสดงตัวเลือกซองอั่งเปา TrueMoney ควบคู่กับ PromptPay', async () => {
+    let replyPayload;
+    await interactionCreateEvent.execute({
+        isButton: () => true,
+        customId: 'buy_yuri',
+        reply: async payload => { replyPayload = payload; },
+    });
+
+    const buttons = replyPayload.components[0].components.map(button => button.toJSON());
+    assert.deepEqual(buttons.map(button => button.custom_id), [
+        'pay_truemoney:buy_yuri',
+        'pay_stripe:buy_yuri',
+    ]);
+});
+
+test('เลือก TrueMoney แล้วยังเปิด modal รับลิงก์ซองเดิม', async () => {
+    let shownModal;
+    await interactionCreateEvent.execute({
+        isButton: () => true,
+        customId: 'pay_truemoney:buy_yuri',
+        showModal: async modal => { shownModal = modal.toJSON(); },
+    });
+
+    assert.equal(shownModal.custom_id, 'modal_yuri');
+    assert.equal(shownModal.components[0].components[0].custom_id, 'truemoney_link');
 });
