@@ -356,6 +356,17 @@ module.exports = {
             const mookRow = new ActionRowBuilder().addComponents(mookButton);
             await message.channel.send({ embeds: [mookEmbed], components: [mookRow] });
 
+            // --- 🖤 30: นาริ (Nari)  (55 บาท) ---
+            const nariEmbed = new EmbedBuilder()
+                .setColor('#0a072c')
+                .setTitle('🖤 ตัวละคร: นาริ (Nari)')
+                .setDescription('ได้รับยศพิเศษ <@&1535866569295405137>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1535867054727626773/TA-2026-07-29-18-11-17-1girlbeau-1107015216-0.png?ex=6a795328&is=6a7801a8&hm=efda928eae25b6cadfabbd210e58b90b053fb27b3da496260b6b8d4a898156d7&=&format=webp&quality=lossless&width=320&height=320');
+
+            const nariButton = new ButtonBuilder().setCustomId('buy_nari').setLabel('🖤 โดเนทให้ นาริ (55 บาท)').setStyle(ButtonStyle.Primary);
+            const nariRow = new ActionRowBuilder().addComponents(nariButton);
+            await message.channel.send({ embeds: [nariEmbed], components: [nariRow] });
+
             await message.delete().catch(() => {});
         }
     },
