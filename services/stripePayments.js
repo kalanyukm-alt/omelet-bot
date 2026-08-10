@@ -1,7 +1,7 @@
 const crypto = require('node:crypto');
 const { PermissionFlagsBits } = require('discord.js');
 const { recordTransactionAudit } = require('./transactionAudit');
-const { sendLog } = require('./discordLog');
+const { formatDiscordIdentity, sendLog } = require('./discordLog');
 
 const STRIPE_API_BASE = 'https://api.stripe.com/v1';
 const CHECKOUT_EXPIRY_SECONDS = 31 * 60;
@@ -320,10 +320,12 @@ async function fulfillPaidCheckoutSession(client, session, roleConfigByKey) {
         return { ok: false, retryable: true, reason: 'target_fetch_failed' };
     }
 
+    const discordIdentity = formatDiscordIdentity(member.user, discordUserId);
+
     if (!role || role.managed || !botMember.permissions.has(PermissionFlagsBits.ManageRoles)
         || botMember.roles.highest.comparePositionTo(role) <= 0) {
         await recordTransactionAudit({ ...fulfillmentAudit, status: 'stripe_role_unavailable' });
-        await sendLog(client, `🔴 **[Stripe รับเงินแล้ว แต่บอทให้ยศไม่ได้]** User ID: \`${discordUserId}\` ยศ: **${config.roleName}** Session: \`${session.id}\``);
+        await sendLog(client, `🔴 **[Stripe รับเงินแล้ว แต่บอทให้ยศไม่ได้]** ${discordIdentity} ยศ: **${config.roleName}** Session: \`${session.id}\``);
         return { ok: false, retryable: false, reason: 'role_unavailable' };
     }
 
@@ -336,12 +338,12 @@ async function fulfillPaidCheckoutSession(client, session, roleConfigByKey) {
         await member.roles.add(role, `Stripe PromptPay ${amountSatang / 100} baht; session ${session.id}`);
     } catch (error) {
         await recordTransactionAudit({ ...fulfillmentAudit, status: 'stripe_role_failed', error: error.message });
-        await sendLog(client, `🔴 **[Stripe รับเงินแล้ว แต่เพิ่มยศล้มเหลว — ระบบจะลองใหม่]** User ID: \`${discordUserId}\` Session: \`${session.id}\``);
+        await sendLog(client, `🔴 **[Stripe รับเงินแล้ว แต่เพิ่มยศล้มเหลว — ระบบจะลองใหม่]** ${discordIdentity} Session: \`${session.id}\``);
         return { ok: false, retryable: true, reason: 'role_add_failed' };
     }
 
     await recordTransactionAudit({ ...fulfillmentAudit, status: 'stripe_role_granted' });
-    await sendLog(client, `🟢 **[Stripe PromptPay สำเร็จ]** User ID: \`${discordUserId}\` จ่าย **${amountSatang / 100} บาท** → ได้รับยศ **${config.roleName}**`);
+    await sendLog(client, `🟢 **[Stripe PromptPay สำเร็จ]** ${discordIdentity} จ่าย **${amountSatang / 100} บาท** → ได้รับยศ **${config.roleName}**`);
     return { ok: true, alreadyGranted: false };
 }
 

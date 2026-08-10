@@ -1,3 +1,18 @@
+function sanitizeInlineCode(value, fallback) {
+    const normalized = String(value ?? fallback)
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/`/g, 'ˋ')
+        .trim();
+    return normalized || fallback;
+}
+
+function formatDiscordIdentity(user, fallbackId = 'unknown') {
+    const discordUser = user?.user ?? user;
+    const tag = sanitizeInlineCode(discordUser?.tag ?? discordUser?.username, 'ไม่ทราบชื่อ');
+    const userId = sanitizeInlineCode(discordUser?.id ?? fallbackId, 'unknown');
+    return `ชื่อ Discord: \`${tag}\` | User ID: \`${userId}\``;
+}
+
 async function sendLog(client, content) {
     try {
         const channelId = process.env.LOG_CHANNEL;
@@ -12,4 +27,4 @@ async function sendLog(client, content) {
     }
 }
 
-module.exports = { sendLog };
+module.exports = { formatDiscordIdentity, sendLog };

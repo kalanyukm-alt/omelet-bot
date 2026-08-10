@@ -15,7 +15,7 @@ const {
     StripeConfigError,
 } = require('../services/stripePayments');
 const { recordTransactionAudit } = require('../services/transactionAudit');
-const { sendLog } = require('../services/discordLog');
+const { formatDiscordIdentity, sendLog } = require('../services/discordLog');
 
 // ===== CONFIG: ข้อมูลตัวละคร (เพิ่มตัวใหม่แค่มาแก้ตรงนี้) =====
 const ROLE_CONFIG = {
@@ -370,6 +370,7 @@ module.exports = {
 
         // ─── กรอก Modal → ประมวลผล ───
         if (!interaction.isModalSubmit()) return;
+        const discordIdentity = formatDiscordIdentity(interaction.user);
 
         if (interaction.customId.startsWith(STRIPE_MODAL_PREFIX)) {
             const configKey = interaction.customId.slice(STRIPE_MODAL_PREFIX.length);
@@ -427,7 +428,7 @@ module.exports = {
                     content: `✅ สร้างหน้าชำระเงินสำหรับ **${config.roleName}** แล้ว\nยอด **${formatSatang(amountSatang)} บาท** ลิงก์หมดอายุประมาณ 30 นาที\nระบบจะให้ยศอัตโนมัติหลัง Stripe ยืนยันว่าได้รับเงินจริงครับ`,
                     components: [payRow],
                 });
-                await sendLog(interaction.client, `🔵 **[สร้าง Stripe Checkout]** User ID: \`${interaction.user.id}\` ยอด **${formatSatang(amountSatang)} บาท** → **${config.roleName}** (${checkout.livemode ? 'LIVE' : 'TEST'})`);
+                await sendLog(interaction.client, `🔵 **[สร้าง Stripe Checkout]** ${discordIdentity} ยอด **${formatSatang(amountSatang)} บาท** → **${config.roleName}** (${checkout.livemode ? 'LIVE' : 'TEST'})`);
             } catch (error) {
                 console.error('[STRIPE] create checkout error:', error);
                 await recordTransactionAudit({
@@ -444,7 +445,7 @@ module.exports = {
                     ? '❌ ระบบ PromptPay ยังตั้งค่าไม่ครบ กรุณาแจ้งแอดมินครับ'
                     : '❌ สร้างหน้า PromptPay ไม่สำเร็จ ระบบยังไม่ได้รับเงิน กรุณาลองใหม่ภายหลังครับ';
                 await interaction.editReply(message);
-                await sendLog(interaction.client, `🔴 **[Stripe Checkout Error — ยังไม่ได้รับเงิน]** \`${error.message}\``);
+                await sendLog(interaction.client, `🔴 **[Stripe Checkout Error — ยังไม่ได้รับเงิน]** ${discordIdentity} Error: \`${error.message}\``);
             }
             return;
         }
@@ -540,7 +541,7 @@ module.exports = {
                     await interaction.editReply(`❌ **ยอดเงินไม่พอครับ!**\nซองนี้มีเงิน **${amount} บาท** (ขั้นต่ำสำหรับ ${config.roleName} คือ ${config.amount} บาท)\n*บอทยังไม่ได้ดึงเงิน ลิงก์ซองนี้ยังใช้งานได้ปกติครับ*`);
                 }
 
-                await sendLog(interaction.client, `🟡 **[ไม่ได้รับเงิน]** User ID: \`${interaction.user.id}\` → ${verified.step}${verified.code ? ` (${verified.code})` : ''}`);
+                await sendLog(interaction.client, `🟡 **[ไม่ได้รับเงิน]** ${discordIdentity} → ${verified.step}${verified.code ? ` (${verified.code})` : ''}`);
                 return;
             }
 
@@ -571,7 +572,7 @@ module.exports = {
                     const amount = formatSatang(redeemed.amountSatang);
                     await recordTransactionAudit({ ...auditBase, status: paymentPhase, actualAmountSatang: redeemed.amountSatang });
                     await interaction.editReply(`⚠️ ระบบรับเงินได้ **${amount} บาท** ซึ่งต่ำกว่าราคา กรุณาติดต่อแอดมินพร้อม User ID **${interaction.user.id}** ครับ`);
-                    await sendLog(interaction.client, `🔴 **[CRITICAL: ยอดรับจริงไม่ตรง]** User ID: \`${interaction.user.id}\` รับ ${amount} บาท ต้องการ ${config.amount} บาท`);
+                    await sendLog(interaction.client, `🔴 **[CRITICAL: ยอดรับจริงไม่ตรง]** ${discordIdentity} รับ ${amount} บาท ต้องการ ${config.amount} บาท`);
                     return;
                 }
 
@@ -582,7 +583,7 @@ module.exports = {
                 }
                 await recordTransactionAudit({ ...auditBase, status: paymentPhase, redeemCode: redeemed.code });
                 await interaction.editReply(errorMessage);
-                await sendLog(interaction.client, `🔴 **[ดึงเงินล้มเหลว]** User ID: \`${interaction.user.id}\` → ${redeemed.code}`);
+                await sendLog(interaction.client, `🔴 **[ดึงเงินล้มเหลว]** ${discordIdentity} → ${redeemed.code}`);
                 return;
             }
 
@@ -606,7 +607,7 @@ module.exports = {
                     error: roleError.message,
                 });
                 await interaction.editReply(`✅ รับเงินสำเร็จ **${amount} บาท** แล้วครับ!\n❗ แต่ระบบให้ยศไม่ได้ กรุณาติดต่อแอดมินพร้อม User ID **${interaction.user.id}** เพื่อรับยศ **${config.roleName}** ครับ`);
-                await sendLog(interaction.client, `🔴 **[ให้ยศล้มเหลว — ตรวจสอบด่วน]**\nUser ID: \`${interaction.user.id}\`\nยอด: **${amount} บาท**\nยศ: **${config.roleName}**\nError: \`${roleError.message}\``);
+                await sendLog(interaction.client, `🔴 **[ให้ยศล้มเหลว — ตรวจสอบด่วน]**\n${discordIdentity}\nยอด: **${amount} บาท**\nยศ: **${config.roleName}**\nError: \`${roleError.message}\``);
                 return;
             }
 
@@ -617,7 +618,7 @@ module.exports = {
                 actualAmountSatang: redeemed.amountSatang,
             });
             await interaction.editReply(`✅ รับเงินสำเร็จ **${amount} บาท**!\n🎉 ระบบมอบยศ **${config.roleName}** ให้คุณเรียบร้อยแล้ว ขอบคุณที่สนับสนุนครับ!`);
-            await sendLog(interaction.client, `🟢 **[โดเนทสำเร็จ]** User ID: \`${interaction.user.id}\` โดเนท **${amount} บาท** → ได้รับยศ **${config.roleName}**`);
+            await sendLog(interaction.client, `🟢 **[โดเนทสำเร็จ]** ${discordIdentity} โดเนท **${amount} บาท** → ได้รับยศ **${config.roleName}**`);
         } catch (error) {
             console.error('[ERROR] interactionCreate:', error);
             const isAmbiguousPayment = paymentPhase === 'redeem_started';
@@ -631,13 +632,13 @@ module.exports = {
 
             if (isAmbiguousPayment) {
                 await interaction.editReply('⚠️ ระบบขาดการติดต่อระหว่างรับซอง ห้ามส่งซองเดิมซ้ำ กรุณาติดต่อแอดมินพร้อม User ID **' + interaction.user.id + '** ครับ').catch(() => {});
-                await sendLog(interaction.client, `🔴 **[CRITICAL: สถานะรับเงินไม่ชัดเจน]** User ID: \`${interaction.user.id}\` Error: \`${error.message}\``);
+                await sendLog(interaction.client, `🔴 **[CRITICAL: สถานะรับเงินไม่ชัดเจน]** ${discordIdentity} Error: \`${error.message}\``);
             } else if (moneyWasRedeemed) {
                 await interaction.editReply('⚠️ ระบบรับเงินแล้วแต่เกิดข้อผิดพลาดภายหลัง กรุณาติดต่อแอดมินพร้อม User ID **' + interaction.user.id + '** ครับ').catch(() => {});
-                await sendLog(interaction.client, `🔴 **[Post-redeem Error]** User ID: \`${interaction.user.id}\` Phase: \`${paymentPhase}\` Error: \`${error.message}\``);
+                await sendLog(interaction.client, `🔴 **[Post-redeem Error]** ${discordIdentity} Phase: \`${paymentPhase}\` Error: \`${error.message}\``);
             } else {
                 await interaction.editReply('❌ เกิดข้อผิดพลาดระหว่างตรวจซอง ระบบยังไม่ได้รับเงิน กรุณาลองใหม่ครับ').catch(() => {});
-                await sendLog(interaction.client, `🔴 **[System Error — ยังไม่ได้รับเงิน]** User ID: \`${interaction.user.id}\` Error: \`${error.message}\``);
+                await sendLog(interaction.client, `🔴 **[System Error — ยังไม่ได้รับเงิน]** ${discordIdentity} Error: \`${error.message}\``);
             }
         } finally {
             if (browser) await browser.close().catch(() => {});
