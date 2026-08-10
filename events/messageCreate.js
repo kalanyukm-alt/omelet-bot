@@ -367,6 +367,17 @@ module.exports = {
             const nariRow = new ActionRowBuilder().addComponents(nariButton);
             await message.channel.send({ embeds: [nariEmbed], components: [nariRow] });
 
+            // --- 🤍 31: เซีย (Sia)  (55 บาท) ---
+            const siaEmbed = new EmbedBuilder()
+                .setColor('#0a072c')
+                .setTitle('🤍 ตัวละคร: เซีย (Sia)')
+                .setDescription('ได้รับยศพิเศษ <@&1536518835161800825>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1536519271994368111/TA-2026-08-05-19-20-03-1girlbeau-1736922506-1.png?ex=6a7bb295&is=6a7a6115&hm=a650eaa7d51e2abfd24112a6741d33551d7b66d08e0613244f64858c550b6e4f&=&format=webp&quality=lossless');
+
+            const siaButton = new ButtonBuilder().setCustomId('buy_sia').setLabel('🤍 โดเนทให้ เซีย (55 บาท)').setStyle(ButtonStyle.Primary);
+            const siaRow = new ActionRowBuilder().addComponents(siaButton);
+            await message.channel.send({ embeds: [siaEmbed], components: [siaRow] });
+
             await message.delete().catch(() => {});
         }
     },
