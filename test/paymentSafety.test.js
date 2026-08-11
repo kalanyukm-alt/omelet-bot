@@ -119,19 +119,16 @@ test('จำกัดการตรวจซองพร้อมกันท�
     releasePaymentSlot('user-2', 'voucher-2');
 });
 
-test('ปุ่มตัวละครยังแสดงตัวเลือกซองอั่งเปา TrueMoney ควบคู่กับ PromptPay', async () => {
-    let replyPayload;
+test('ปุ่มตัวละครเปิด modal รับลิงก์ซองอั่งเปา TrueMoney โดยตรง', async () => {
+    let shownModal;
     await interactionCreateEvent.execute({
         isButton: () => true,
         customId: 'buy_yuri',
-        reply: async payload => { replyPayload = payload; },
+        showModal: async modal => { shownModal = modal.toJSON(); },
     });
 
-    const buttons = replyPayload.components[0].components.map(button => button.toJSON());
-    assert.deepEqual(buttons.map(button => button.custom_id), [
-        'pay_truemoney:buy_yuri',
-        'pay_stripe:buy_yuri',
-    ]);
+    assert.equal(shownModal.custom_id, 'modal_yuri');
+    assert.equal(shownModal.components[0].components[0].custom_id, 'truemoney_link');
 });
 
 test('เลือก TrueMoney แล้วยังเปิด modal รับลิงก์ซองเดิม', async () => {
