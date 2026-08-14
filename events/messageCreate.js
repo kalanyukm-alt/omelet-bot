@@ -378,6 +378,17 @@ module.exports = {
             const siaRow = new ActionRowBuilder().addComponents(siaButton);
             await message.channel.send({ embeds: [siaEmbed], components: [siaRow] });
 
+            // --- 💜 32: แพรว (Praew)  (50 บาท) ---
+            const praewEmbed = new EmbedBuilder()
+                .setColor('#aa71b6')
+                .setTitle('💜 ตัวละคร: แพรว (Praew)')
+                .setDescription('ได้รับยศพิเศษ <@&1537670593875410974>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1537671334358949919/TA-2026-08-11-07-46-52-1girlbeau-785271317.png?ex=6a7fe386&is=6a7e9206&hm=f83eb090577629e499370e9bb7f385fbfb0548e468d61b0b80af8a3ec08f6046&=&format=webp&quality=lossless&width=320&height=320');
+
+            const praewButton = new ButtonBuilder().setCustomId('buy_praew').setLabel('💜 โดเนทให้ แพรว (50 บาท)').setStyle(ButtonStyle.Primary);
+            const praewRow = new ActionRowBuilder().addComponents(praewButton);
+            await message.channel.send({ embeds: [praewEmbed], components: [praewRow] });
+
             await message.delete().catch(() => {});
         }
     },
