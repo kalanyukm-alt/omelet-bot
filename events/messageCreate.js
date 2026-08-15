@@ -389,6 +389,17 @@ module.exports = {
             const praewRow = new ActionRowBuilder().addComponents(praewButton);
             await message.channel.send({ embeds: [praewEmbed], components: [praewRow] });
 
+            // --- 🩷 33: พั้นช์ (Punch)  (55 บาท) ---
+            const punchEmbed = new EmbedBuilder()
+                .setColor('#ffa8cc')
+                .setTitle('🩷 ตัวละคร: พั้นช์ (Punch)')
+                .setDescription('ได้รับยศพิเศษ <@&1538023689910755409>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1538024249174790154/TA-2026-08-13-06-22-35-1girlbeau-1694968891.png?ex=6a812c34&is=6a7fdab4&hm=a91f38bb548c4f6cd30927d7adef3b82a88f09a669f6dbcc72dcbf4bb239cd62&=&format=webp&quality=lossless');
+
+            const punchButton = new ButtonBuilder().setCustomId('buy_punch').setLabel('🩷 โดเนทให้ พั้นช์ (55 บาท)').setStyle(ButtonStyle.Primary);
+            const punchRow = new ActionRowBuilder().addComponents(punchButton);
+            await message.channel.send({ embeds: [punchEmbed], components: [punchRow] });
+
             await message.delete().catch(() => {});
         }
     },
