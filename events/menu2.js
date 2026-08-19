@@ -13,7 +13,7 @@ module.exports = {
                 return;
             }
             
-             // --- 🍧 ก้อนที่ 1: ฟลอเรนเซีย (Florencia) (10 บาท) ---
+             // --- 🍧 1: ฟลอเรนเซีย (Florencia) (10 บาท) ---
             const florenciaEmbed = new EmbedBuilder()
                 .setColor('#ff96b9') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🍧 ตัวละคร: ฟลอเรนเซีย (Florencia)')
@@ -24,7 +24,7 @@ module.exports = {
             const florenciaRow = new ActionRowBuilder().addComponents(florenciaButton);
             await message.channel.send({ embeds: [florenciaEmbed], components: [florenciaRow] });
 
-             // --- 🧸 ก้อนที่ 2: ลูเม (Lume) (10 บาท) ---
+             // --- 🧸 2: ลูเม (Lume) (10 บาท) ---
             const lumeEmbed = new EmbedBuilder()
                 .setColor('#ffc6d9') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🧸 ตัวละคร: ลูเม (Lume)')
@@ -35,7 +35,7 @@ module.exports = {
             const lumeRow = new ActionRowBuilder().addComponents(lumeButton);
             await message.channel.send({ embeds: [lumeEmbed], components: [lumeRow] });
 
-             // --- 🐕 ก้อนที่ 3: อาร์คาเนีย (Arcania) (10 บาท) ---
+             // --- 🐕 3: อาร์คาเนีย (Arcania) (10 บาท) ---
             const arcaniaEmbed = new EmbedBuilder()
                 .setColor('#886262')
                 .setTitle('🐕 ตัวละคร: อาร์คาเนีย (Arcania)')
@@ -46,7 +46,7 @@ module.exports = {
             const arcaniaRow = new ActionRowBuilder().addComponents(arcaniaButton);
             await message.channel.send({ embeds: [arcaniaEmbed], components: [arcaniaRow] });
 
-             // --- 🧤 ก้อนที่ 4: เนเธอร่า (Nethera) (10 บาท) ---
+             // --- 🧤 4: เนเธอร่า (Nethera) (10 บาท) ---
             const netheraEmbed = new EmbedBuilder()
                 .setColor('#931ba3')
                 .setTitle('🧤 ตัวละคร: เนเธอร่า (Nethera)')
@@ -57,7 +57,7 @@ module.exports = {
             const netheraRow = new ActionRowBuilder().addComponents(netheraButton);
             await message.channel.send({ embeds: [netheraEmbed], components: [netheraRow] });
 
-            // --- 🔮 ก้อนที่ 5: มิราเชียล (Miraciel) (15 บาท) ---
+            // --- 🔮 5: มิราเชียล (Miraciel) (15 บาท) ---
             const miracielEmbed = new EmbedBuilder()
                 .setColor('#e100ff')
                 .setTitle('🔮 ตัวละคร: มิราเชียล (Miraciel)')
@@ -68,7 +68,7 @@ module.exports = {
             const miracielRow = new ActionRowBuilder().addComponents(miracielButton);
             await message.channel.send({ embeds: [miracielEmbed], components: [miracielRow] });
 
-            // --- 🌹 ก้อนที่ 6: เมอร์เซีย (Mercia) (15 บาท) ---
+            // --- 🌹 6: เมอร์เซีย (Mercia) (15 บาท) ---
             const merciaEmbed = new EmbedBuilder()
                 .setColor('#8b122c')
                 .setTitle('🌹 ตัวละคร: เมอร์เซีย (Mercia)')
@@ -79,7 +79,7 @@ module.exports = {
             const merciaRow = new ActionRowBuilder().addComponents(merciaButton);
             await message.channel.send({ embeds: [merciaEmbed], components: [merciaRow] });
 
-            // --- 🩵 ก้อนที่ 7: อิลเซียร์ (Ilsier) (10 บาท) ---
+            // --- 🩵 7: อิลเซียร์ (Ilsier) (10 บาท) ---
             const ilsierEmbed = new EmbedBuilder()
                 .setColor('#93b0ff')
                 .setTitle('🌹 ตัวละคร: อิลเซียร์ (Ilsier)')
@@ -89,6 +89,17 @@ module.exports = {
             const ilsierButton = new ButtonBuilder().setCustomId('buy_ilsier').setLabel('🌹 โดเนทให้ อิลเซียร์ (10 บาท)').setStyle(ButtonStyle.Primary);
             const ilsierRow = new ActionRowBuilder().addComponents(ilsierButton);
             await message.channel.send({ embeds: [ilsierEmbed], components: [ilsierRow] });
+
+            // --- 💙 8: เซเรน (Seren)  (55 บาท) ---
+            const serenEmbed = new EmbedBuilder()
+                .setColor('#1b46bb')
+                .setTitle('💙 ตัวละคร: เซเรน (Seren)')
+                .setDescription('ได้รับยศพิเศษ <@&1539765929099923546>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1539766806238076968/TA-2026-08-16-02-58-53-1girlbeau-3955445355.png?ex=6a878316&is=6a863196&hm=3b9c8bdc3099647e61bf4c4c3aa36265286e292587a8fab1afe95a5a45a7069d&=&format=webp&quality=lossless');
+
+            const serenButton = new ButtonBuilder().setCustomId('buy_seren').setLabel('💙 โดเนทให้ เซเรน (55 บาท)').setStyle(ButtonStyle.Primary);
+            const serenRow = new ActionRowBuilder().addComponents(serenButton);
+            await message.channel.send({ embeds: [serenEmbed], components: [serenRow] });
 
 
 
