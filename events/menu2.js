@@ -101,6 +101,17 @@ module.exports = {
             const serenRow = new ActionRowBuilder().addComponents(serenButton);
             await message.channel.send({ embeds: [serenEmbed], components: [serenRow] });
 
+            // --- 💛 9: ออเรีย (Aurea) (50 บาท) ---
+            const aureaEmbed = new EmbedBuilder()
+                .setColor('#ffe865')
+                .setTitle('💛 ตัวละคร: ออเรีย (Aurea)')
+                .setDescription('ได้รับยศพิเศษ <@&1540517583151829124>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1540518047712935956/TA-2026-08-17-02-57-59-1girlbeau-1610734486.png?ex=6a8a3ebc&is=6a88ed3c&hm=a8c59ed22caf2209cdff372f8fc9cfa2d3ed2d4b623e7554dfc39477336a324b&=&format=webp&quality=lossless&width=384&height=384');
+
+            const aureaButton = new ButtonBuilder().setCustomId('buy_aurea').setLabel('💛 โดเนทให้ ออเรีย (50 บาท)').setStyle(ButtonStyle.Primary);
+            const aureaRow = new ActionRowBuilder().addComponents(aureaButton);
+            await message.channel.send({ embeds: [aureaEmbed], components: [aureaRow] });
+
 
 
             await message.delete().catch(() => {});
