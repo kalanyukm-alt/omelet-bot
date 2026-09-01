@@ -268,6 +268,17 @@ module.exports = {
             const lukwaRow = new ActionRowBuilder().addComponents(lukwaButton);
             await message.channel.send({ embeds: [lukwaEmbed], components: [lukwaRow] });
 
+            // --- 🩵 35: สกาย (Sky)  (55 บาท) ---
+            const skyEmbed = new EmbedBuilder()
+                .setColor('#d3f8ff')
+                .setTitle('🩵 ตัวละคร: สกาย (Sky)')
+                .setDescription('ได้รับยศพิเศษ <@&1544153385723240448>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1544153734370557962/TA-2026-08-25-12-23-52-1girlbeau-1806558747.png?ex=6a9778bb&is=6a96273b&hm=f8cdf994512ae04f56992c900e392985718a875eca7d5bd678aa224f977cf495&=&format=webp&quality=lossless&width=384&height=384');
+
+            const skyButton = new ButtonBuilder().setCustomId('buy_sky').setLabel('🩵 โดเนทให้ สกาย (55 บาท)').setStyle(ButtonStyle.Primary);
+            const skyRow = new ActionRowBuilder().addComponents(skyButton);
+            await message.channel.send({ embeds: [skyEmbed], components: [skyRow] });
+
             await message.delete().catch(() => {});
         }
     },
