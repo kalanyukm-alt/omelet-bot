@@ -279,6 +279,17 @@ module.exports = {
             const skyRow = new ActionRowBuilder().addComponents(skyButton);
             await message.channel.send({ embeds: [skyEmbed], components: [skyRow] });
 
+            // --- 🎱 36: ยูมิ (Yumi)  (50 บาท) ---
+            const yumiEmbed = new EmbedBuilder()
+                .setColor('#0f0f0f')
+                .setTitle('🎱 ตัวละคร: ยูมิ (Yumi)')
+                .setDescription('ได้รับยศพิเศษ <@&1544855841948180530>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1544856348557049967/TA-2026-09-02-03-34-38-1girlbeau-2216835120.png?ex=6a9a0717&is=6a98b597&hm=590ee16681380534a7c2f0cd79932e200cdc456e537791c2d9ea2a6af0fd003c&=&format=webp&quality=lossless&width=384&height=384');
+
+            const yumiButton = new ButtonBuilder().setCustomId('buy_yumi').setLabel('🎱 โดเนทให้ ยูมิ (50 บาท)').setStyle(ButtonStyle.Primary);
+            const yumiRow = new ActionRowBuilder().addComponents(yumiButton);
+            await message.channel.send({ embeds: [yumiEmbed], components: [yumiRow] });
+
             await message.delete().catch(() => {});
         }
     },
