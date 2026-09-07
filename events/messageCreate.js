@@ -290,6 +290,17 @@ module.exports = {
             const yumiRow = new ActionRowBuilder().addComponents(yumiButton);
             await message.channel.send({ embeds: [yumiEmbed], components: [yumiRow] });
 
+            // --- 🧡 37: จีจี้ (Gigi) (50 บาท) ---
+            const gigiEmbed = new EmbedBuilder()
+                .setColor('#0f0f0f')
+                .setTitle('🧡 ตัวละคร: จีจี้ (Gigi)')
+                .setDescription('ได้รับยศพิเศษ <@&1546346240650772520>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1546346576258015232/TA-2026-09-05-08-44-53-1girlbeau-1755804308.png?ex=6a9f72f9&is=6a9e2179&hm=6d00cf7c3ec97ace9dfabc6431561da55bd4a69766adfdded0fa432db1553193&=&format=webp&quality=lossless&width=384&height=384');
+
+            const gigiButton = new ButtonBuilder().setCustomId('buy_gigi').setLabel('🧡 โดเนทให้ จีจี้ (50 บาท)').setStyle(ButtonStyle.Primary);
+            const gigiRow = new ActionRowBuilder().addComponents(gigiButton);
+            await message.channel.send({ embeds: [gigiEmbed], components: [gigiRow] });
+
             await message.delete().catch(() => {});
         }
     },

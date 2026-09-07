@@ -59,6 +59,7 @@ const ROLE_CONFIG = {
     buy_lukwa: { modalId: 'modal_lukwa', title: 'โดเนทให้ ลูกหว้า (55 บาท)', roleId: '1543464539322974280', roleName: 'ลูกหว้า', amount: 55 }, // 🩷 เพิ่มของ ลูกหว้า เรียบร้อย!
     buy_sky: { modalId: 'modal_sky', title: 'โดเนทให้ สกาย (55 บาท)', roleId: '1544153385723240448', roleName: 'สกาย', amount: 55 }, // 🩵 เพิ่มของ สกาย เรียบร้อย!
     buy_yumi: { modalId: 'modal_yumi', title: 'โดเนทให้ ยูมิ (50 บาท)', roleId: '1544855841948180530', roleName: 'ยูมิ', amount: 50 }, // 🎱 เพิ่มของ ยูมิ เรียบร้อย!
+    buy_gigi: { modalId: 'modal_gigi', title: 'โดเนทให้ จีจี้ (50 บาท)', roleId: '1546346240650772520', roleName: 'จีจี้', amount: 50 }, // 🧡 เพิ่มของ จีจี้ เรียบร้อย!
 }; 
 
 const MODAL_TO_CONFIG = Object.fromEntries(
