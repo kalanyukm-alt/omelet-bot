@@ -33,8 +33,8 @@ const ROLE_CONFIG = {
     buy_nethera: { modalId: 'modal_nethera', title: 'โดเนทให้ เนเธอร่า (10 บาท)', roleId: '1501427896278061136', roleName: 'เนเธอร่า', amount: 10 }, // 🧤 เพิ่มของ เนเธอร่า เรียบร้อย!
     buy_miraciel: { modalId: 'modal_miraciel', title: 'โดเนทให้ มิราเชียล (15 บาท)', roleId: '1502562825116323881', roleName: 'มิราเชียล', amount: 15 }, // 🔮 เพิ่มของ มิราเชียล เรียบร้อย!
     buy_mercia: { modalId: 'modal_mercia', title: 'โดเนทให้ เมอร์เซีย (15 บาท)', roleId: '1504571357520986304', roleName: 'เมอร์เซีย', amount: 15 }, // 🌹 เพิ่มของ เมอร์เซีย เรียบร้อย!
-    buy_somjeed: { modalId: 'modal_somjeed', title: 'โดเนทให้ ส้มจี๊ด (1 บาท)', roleId: '1517102688779767829', roleName: 'ส้มจี๊ด', amount: 1 }, // 🍹 เพิ่มของ ส้มจี๊ด เรียบร้อย!
-    buy_muna: { modalId: 'modal_muna', title: 'โดเนทให้ มูนา (2 บาท)', roleId: '1517943037253128406', roleName: 'มูนา', amount: 2 }, // 🖤 เพิ่มของ มูนา เรียบร้อย!
+    buy_somjeed: { modalId: 'modal_somjeed', title: 'โดเนทให้ ส้มจี๊ด (10 บาท)', roleId: '1517102688779767829', roleName: 'ส้มจี๊ด', amount: 10 }, // 🍹 เพิ่มของ ส้มจี๊ด เรียบร้อย!
+    buy_muna: { modalId: 'modal_muna', title: 'โดเนทให้ มูนา (10 บาท)', roleId: '1517943037253128406', roleName: 'มูนา', amount: 10 }, // 🖤 เพิ่มของ มูนา เรียบร้อย!
     buy_lalinn: { modalId: 'modal_lalinn', title: 'โดเนทให้ ลลิล (20 บาท)', roleId: '1518995242269937836', roleName: 'ลลิล', amount: 20 }, // 🤍 เพิ่มของ ลลิล เรียบร้อย!
     buy_cherry: { modalId: 'modal_cherry', title: 'โดเนทให้ เชอร์รี่ (20 บาท)', roleId: '1520031790243254312', roleName: 'เชอร์รี่', amount: 20 }, // 🍒 เพิ่มของ เชอร์รี่ เรียบร้อย!
     buy_ava: { modalId: 'modal_ava', title: 'โดเนทให้ เอวา (20 บาท)', roleId: '1520368884828475402', roleName: 'เอวา', amount: 20 }, // 📯 เพิ่มของ เอวา เรียบร้อย!

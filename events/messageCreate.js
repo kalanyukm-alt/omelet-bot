@@ -26,25 +26,25 @@ module.exports = {
                 return;
             }
 
-            // --- 🍹 ก้อนที่ 13: ส้มจี๊ด (Somjeed) (1 บาท) ---
+            // --- 🍹 ก้อนที่ 13: ส้มจี๊ด (Somjeed) (10 บาท) ---
             const somjeedEmbed = new EmbedBuilder()
                 .setColor('#fff893') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🍹 ตัวละคร: ส้มจี๊ด (Somjeed)')
                 .setDescription('ได้รับยศพิเศษ <@&1517102688779767829>') 
                 .setImage('https://media.discordapp.net/attachments/1489853742462533762/1517105198907260928/TA-2026-06-15-12-29-59-1girlbeau-3919768925-0.png?ex=6a3511d1&is=6a33c051&hm=613f1cff3d7916eaf143052fc81483680f0a5d6f4be27e0555ba1f4a74eef311&=&format=webp&quality=lossless');
 
-            const somjeedButton = new ButtonBuilder().setCustomId('buy_somjeed').setLabel('🍹 โดเนทให้ ส้มจี๊ด (1 บาท)').setStyle(ButtonStyle.Primary);
+            const somjeedButton = new ButtonBuilder().setCustomId('buy_somjeed').setLabel('🍹 โดเนทให้ ส้มจี๊ด (10 บาท)').setStyle(ButtonStyle.Primary);
             const somjeedRow = new ActionRowBuilder().addComponents(somjeedButton);
             await message.channel.send({ embeds: [somjeedEmbed], components: [somjeedRow] });
 
-            // --- 🖤 ก้อนที่ 14: มูนา (Muna) (2 บาท) ---
+            // --- 🖤 ก้อนที่ 14: มูนา (Muna) (10 บาท) ---
             const munaEmbed = new EmbedBuilder()
                 .setColor('#fff893') // ผมใส่เป็นสีชมพูเข้มให้ครับ จะได้ต่างจากยูริร่างแรก
                 .setTitle('🖤 ตัวละคร: มูนา (Muna)')
                 .setDescription('ได้รับยศพิเศษ <@&1517943037253128406>') 
                 .setImage('https://media.discordapp.net/attachments/1489853742462533762/1517943780618145812/1.png?ex=6a381ecf&is=6a36cd4f&hm=38b74e2bc12f282021cfeb998b41c6806e530880d88a01484a155a281eccb730&=&format=webp&quality=lossless');
 
-            const munaButton = new ButtonBuilder().setCustomId('buy_muna').setLabel('🖤 โดเนทให้ มูนา (2 บาท)').setStyle(ButtonStyle.Primary);
+            const munaButton = new ButtonBuilder().setCustomId('buy_muna').setLabel('🖤 โดเนทให้ มูนา (10 บาท)').setStyle(ButtonStyle.Primary);
             const munaRow = new ActionRowBuilder().addComponents(munaButton);
             await message.channel.send({ embeds: [munaEmbed], components: [munaRow] });
 
