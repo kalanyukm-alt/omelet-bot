@@ -1,3 +1,4 @@
 node_modules/
 .env
 data/transactions.jsonl
+data/gank-orders.json

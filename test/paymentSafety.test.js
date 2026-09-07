@@ -1,5 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
+
+const gankOrderStorePath = path.join(os.tmpdir(), `shopomelet-gank-interaction-${process.pid}.json`);
+process.env.GANK_ORDER_STORE_PATH = gankOrderStorePath;
+process.env.GANK_STREAM_URL = 'https://stream.ganknow.com/00000000-0000-4000-8000-000000000001';
 
 const interactionCreateEvent = require('../events/interactionCreate');
 const {
@@ -119,26 +126,36 @@ test('จำกัดการตรวจซองพร้อมกันท�
     releasePaymentSlot('user-2', 'voucher-2');
 });
 
-test('ปุ่มตัวละครเปิด modal รับลิงก์ซองอั่งเปา TrueMoney โดยตรง', async () => {
-    let shownModal;
+test.after(async () => {
+    await fs.rm(gankOrderStorePath, { force: true });
+});
+
+test('ปุ่มตัวละครสร้างรายการ Gank ที่ผูกกับ Discord user และยศ', async () => {
+    let reply;
     await interactionCreateEvent.execute({
         isButton: () => true,
         customId: 'buy_yuri',
-        showModal: async modal => { shownModal = modal.toJSON(); },
+        user: { id: 'discord-user-1', tag: 'tester#0001' },
+        guildId: 'guild-1',
+        reply: async value => { reply = value; },
     });
 
-    assert.equal(shownModal.custom_id, 'modal_yuri');
-    assert.equal(shownModal.components[0].components[0].custom_id, 'truemoney_link');
+    assert.match(reply.content, /ยูริ — 12 บาท/);
+    assert.match(reply.content, /OML-[A-Z0-9]{6}/);
+    assert.equal(reply.flags, 64);
+    assert.equal(reply.components[0].toJSON().components[0].url, 'https://ganknow.com/omelettt1101/tip');
 });
 
-test('เลือก TrueMoney แล้วยังเปิด modal รับลิงก์ซองเดิม', async () => {
-    let shownModal;
+test('ปุ่ม custom id รุ่นเดิมถูกเปลี่ยนไปสร้างรายการ Gank เช่นกัน', async () => {
+    let reply;
     await interactionCreateEvent.execute({
         isButton: () => true,
         customId: 'pay_truemoney:buy_yuri',
-        showModal: async modal => { shownModal = modal.toJSON(); },
+        user: { id: 'discord-user-2', tag: 'tester#0002' },
+        guildId: 'guild-1',
+        reply: async value => { reply = value; },
     });
 
-    assert.equal(shownModal.custom_id, 'modal_yuri');
-    assert.equal(shownModal.components[0].components[0].custom_id, 'truemoney_link');
+    assert.match(reply.content, /OML-[A-Z0-9]{6}/);
+    assert.equal(reply.components[0].toJSON().components[0].label, 'เปิดหน้าจ่ายเงิน Gank');
 });

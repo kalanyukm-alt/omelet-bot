@@ -10,6 +10,7 @@ const { chromium } = require('playwright'); // 📌 อาวุธทะลว�
 const crypto = require('node:crypto');
 const { recordTransactionAudit } = require('../services/transactionAudit');
 const { formatDiscordIdentity, sendLog } = require('../services/discordLog');
+const { createPendingGankOrder } = require('../services/gankIntegration');
 
 // ===== CONFIG: ข้อมูลตัวละคร (เพิ่มตัวใหม่แค่มาแก้ตรงนี้) =====
 const ROLE_CONFIG = {
@@ -299,18 +300,20 @@ function buildTrueMoneyModal(config) {
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction) {
-        // ─── กดปุ่มตัวละคร → เปิดฟอร์มซองอั่งเปา TrueMoney ───
+        // ─── กดปุ่มตัวละคร → สร้างรายการ Gank ที่ผูกกับ Discord user และยศ ───
         if (interaction.isButton()) {
             const directConfig = ROLE_CONFIG[interaction.customId];
             if (directConfig) {
-                return await interaction.showModal(buildTrueMoneyModal(directConfig));
+                const reply = await createPendingGankOrder(interaction, interaction.customId, directConfig);
+                return await interaction.reply(reply);
             }
 
             if (interaction.customId.startsWith(TRUE_MONEY_BUTTON_PREFIX)) {
                 const configKey = interaction.customId.slice(TRUE_MONEY_BUTTON_PREFIX.length);
                 const config = ROLE_CONFIG[configKey];
                 if (!config) return;
-                return await interaction.showModal(buildTrueMoneyModal(config));
+                const reply = await createPendingGankOrder(interaction, configKey, config);
+                return await interaction.reply(reply);
             }
 
             return;
