@@ -301,6 +301,17 @@ module.exports = {
             const gigiRow = new ActionRowBuilder().addComponents(gigiButton);
             await message.channel.send({ embeds: [gigiEmbed], components: [gigiRow] });
 
+            // --- 💚 37: มิล่า (Mila) (55 บาท) ---
+            const milaEmbed = new EmbedBuilder()
+                .setColor('#0f0f0f')
+                .setTitle('💚 ตัวละคร: มิล่า (Mila)')
+                .setDescription('ได้รับยศพิเศษ <@&1547785514013302934>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1547785953215643668/TA-2026-09-05-20-55-53-1girlbeau-3706459784.png?ex=6aa4af7f&is=6aa35dff&hm=4621b99cb700e7044ea6f4abf07378a79833931dbd32a5c482397959b2683e4b&=&format=webp&quality=lossless');
+
+            const milaButton = new ButtonBuilder().setCustomId('buy_mila').setLabel('💚 โดเนทให้ มิล่า (55 บาท)').setStyle(ButtonStyle.Primary);
+            const milaRow = new ActionRowBuilder().addComponents(milaButton);
+            await message.channel.send({ embeds: [milaEmbed], components: [milaRow] });
+
             await message.delete().catch(() => {});
         }
     },
