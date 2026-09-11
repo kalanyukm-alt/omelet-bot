@@ -312,6 +312,18 @@ module.exports = {
             const milaRow = new ActionRowBuilder().addComponents(milaButton);
             await message.channel.send({ embeds: [milaEmbed], components: [milaRow] });
 
+            // --- ❤️ 38: ญาดา (Yada) (55 บาท) ---
+            const yadaEmbed = new EmbedBuilder()
+                .setColor('#0f0f0f')
+                .setTitle('❤️ ตัวละคร: ญาดา (Yada)')
+                .setDescription('ได้รับยศพิเศษ <@&1548110478683807794>') 
+                .setImage('https://media.discordapp.net/attachments/1489853742462533762/1548110785538949281/TA-2026-09-06-12-40-22-1girlbeau-2041611373.png?ex=6aa5de05&is=6aa48c85&hm=5e65b6ad5428e43623f719bbdf3916042d8480b661bd0cf2314822082e2d41cb&=&format=webp&quality=lossless');
+
+            const yadaButton = new ButtonBuilder().setCustomId('buy_yada').setLabel('❤️ โดเนทให้ ญาดา (55 บาท)').setStyle(ButtonStyle.Primary);
+            const yadaRow = new ActionRowBuilder().addComponents(yadaButton);
+            await message.channel.send({ embeds: [yadaEmbed], components: [yadaRow] });
+
+
             await message.delete().catch(() => {});
         }
     },
